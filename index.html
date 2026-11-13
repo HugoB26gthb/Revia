@@ -1,0 +1,1805 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="color-scheme" content="light dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Revia">
+<title>Revia</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap">
+<style>
+/* Style "papier", inspiré de Notion : fond uni, texte presque noir, fins traits gris, aucun dégradé ni lueur.
+   Même app que REVIA (nuit) : seules les couleurs, formes et typographies changent.
+   Thème "clair" par défaut ; crème, gris et sombre redéfinissent les mêmes variables (data-skin). */
+:root{
+  --bg:#FFFFFF; --surface:#FFFFFF; --hover:#F7F7F5; --soft:#F1F1EF;
+  --text:#37352F; --muted:#787774; --dim:#A5A29A;
+  --stroke:rgba(55,53,47,.09); --stroke-hi:rgba(55,53,47,.18);
+  --accent:#2383E2; --accent-2:#2383E2; --on-accent:#FFFFFF; --accent-bg:#E7F3F8;
+  --ico-fg:#37352F; --chip-on:#E7F3F8;
+  --ring-a:#2383E2; --ring-b:#2383E2; --shadow:rgba(15,15,15,.06);
+  --up:#448361; --up-bg:#EDF3EC; --down:#D44C47; --down-bg:#FDEBEC; --warn:#CB912F; --warn-bg:#FBF3DB;
+  --cyan:#9065B0; --cyan-bg:#F6F3F9;
+  --toast-bg:#37352F; --toast-fg:#FFFFFF;
+  --glow:transparent;
+  --d1:140ms; --d2:220ms; --d3:500ms; --ease:cubic-bezier(.2,.8,.2,1);
+  --f:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI Variable Display","Segoe UI","Inter",Helvetica,"Apple Color Emoji",Arial,sans-serif;
+  color-scheme:light;
+}
+:root[data-skin="creme"]{
+  --bg:#FBF8F1; --surface:#FFFDF8; --hover:#F4EFE4; --soft:#EFE9DC;
+  --text:#3B362E; --muted:#857D70; --dim:#B0A797;
+  --stroke:rgba(80,64,40,.11); --stroke-hi:rgba(80,64,40,.22);
+  --accent:#B4652F; --accent-2:#B4652F; --accent-bg:#F8E8DC; --chip-on:#F8E8DC;
+  --ring-a:#B4652F; --ring-b:#B4652F; --shadow:rgba(60,40,10,.06);
+  --toast-bg:#3B362E;
+}
+:root[data-skin="gris"]{
+  --bg:#F7F7F5; --surface:#FFFFFF; --hover:#EFEFED; --soft:#E9E9E7;
+  --accent:#37352F; --accent-2:#37352F; --accent-bg:#E9E9E7; --chip-on:#E9E9E7;
+  --ring-a:#37352F; --ring-b:#37352F;
+}
+:root[data-skin="sombre"]{
+  --bg:#191919; --surface:#202020; --hover:#252525; --soft:#2C2C2C;
+  --text:rgba(255,255,255,.86); --muted:#9B9B9B; --dim:#6F6F6F;
+  --stroke:rgba(255,255,255,.08); --stroke-hi:rgba(255,255,255,.16);
+  --accent:#529CCA; --accent-2:#529CCA; --on-accent:#FFFFFF; --accent-bg:#1E3A4C; --chip-on:#1E3A4C;
+  --ico-fg:rgba(255,255,255,.86);
+  --ring-a:#529CCA; --ring-b:#529CCA; --shadow:rgba(0,0,0,.3);
+  --up:#4DAB9A; --up-bg:#243D30; --down:#FF7369; --down-bg:#522E2A; --warn:#FFDC49; --warn-bg:#564328;
+  --cyan:#9A6DD7; --cyan-bg:#3C2D49;
+  --toast-bg:#373737; --toast-fg:#FFFFFF;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;color:var(--text);font-family:var(--f);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;background:var(--bg)}
+body.paged{overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+svg{flex:none}
+.screen{max-width:520px;margin:0 auto;padding-inline:18px;padding-block:calc(22px + env(safe-area-inset-top,0px)) 120px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box}
+
+/* typographie */
+.h1{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0;line-height:1.2}
+.lead{color:var(--muted);font-size:14px;margin:2px 0 0}
+.h2{font-size:14px;font-weight:600;margin:14px 0 -4px;display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--text)}
+.h2 small{font-size:13px;color:var(--muted);font-weight:400}
+.h2 button{color:var(--muted);display:flex;align-items:center;gap:2px;font-size:13px;font-weight:400;padding:2px 6px;border-radius:4px}
+.h2 button:hover{background:var(--hover)}
+.lab{font-size:13px;font-weight:600;color:var(--muted);margin:6px 0 -6px}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.num{font-variant-numeric:tabular-nums}
+/* cartes : plates, un fin trait */
+.card{background:var(--surface);border:1px solid var(--stroke);border-radius:10px}
+.pad{padding:16px}
+.stack{display:flex;flex-direction:column;gap:8px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.hd-actions{display:flex;gap:6px;align-items:center}
+.avatar{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:var(--soft);color:var(--text);font-weight:600;flex:none;position:relative;transition:background var(--d1) var(--ease)}
+.avatar:hover{background:var(--hover)}
+.avatar.lg{width:56px;height:56px;font-size:22px;border-radius:12px}
+.nbadge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--down);color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center;border:2px solid var(--bg)}
+
+/* hero : le compte à rebours, aligné à gauche comme un titre de page */
+.hero{position:relative;padding:18px 18px 16px;text-align:left}
+.jj{font-size:72px;font-weight:700;letter-spacing:-.04em;line-height:1;margin:0 0 6px;color:var(--text);white-space:nowrap}
+.jj .mn{margin:0 .02em;color:var(--dim)}
+.jj.sm{font-size:48px}
+.hero .sub{font-size:15px;font-weight:500}
+.hero .date{color:var(--muted);font-size:13px;margin-top:2px}
+.road{display:flex;gap:2px;margin-top:16px}
+.road i{flex:1;height:6px;border-radius:2px;background:var(--soft);min-width:0}
+.road i.p{background:linear-gradient(90deg,var(--accent) 50%,var(--soft) 50%)}
+.road i.f{background:var(--accent)}
+.road i.x{background:transparent;border:1px dashed var(--stroke-hi);box-sizing:border-box}
+.road i.t{outline:2px solid var(--text);outline-offset:1px}
+.road-l{display:flex;justify-content:space-between;color:var(--muted);font-size:11.5px;margin-top:6px}
+.badges{display:flex;gap:6px;justify-content:flex-start;flex-wrap:wrap;margin-top:14px}
+.badges:empty{display:none}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{padding:12px;text-align:left}
+.stat span{display:block;font-size:12px;color:var(--muted)}
+.stat b{display:block;font-size:22px;font-weight:700;margin-top:2px;white-space:nowrap;letter-spacing:-.01em}
+.stat b small{font-size:12px;color:var(--muted);font-weight:400}
+
+/* icônes de matières : petits carrés gris, comme les icônes de pages Notion */
+.ico{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:var(--soft);color:var(--ico-fg);flex:none}
+.ico.sm{width:30px;height:30px;border-radius:7px}
+.ico.xl{width:64px;height:64px;border-radius:14px}
+.ico.ep{background:var(--cyan-bg);color:var(--cyan)}
+.ico.warn{background:var(--warn-bg);color:var(--warn)}
+
+/* séances : lignes de liste */
+.sess{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:4px 6px 4px 4px;border-radius:6px;transition:background var(--d1) var(--ease)}
+.sess.card{background:transparent;border-color:transparent}
+.sess:hover,.sess:active{background:var(--hover)}
+.sess+.sess{margin-top:2px}
+.sess .open{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;text-align:left;min-height:44px;min-width:0}
+.sess .t{min-width:0}
+.sess .t b{display:flex;align-items:center;gap:8px;font-weight:500;font-size:15px;min-width:0;flex-wrap:wrap}
+.sess .t small{display:block;color:var(--muted);font-size:12.5px}
+.sess.done .t b{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--dim)}
+.sess.done .ico{opacity:.5}
+.sess.next{background:var(--accent-bg)}
+/* case à cocher carrée */
+.ck{width:24px;height:24px;margin:5px;border-radius:5px;border:1.5px solid var(--dim);display:grid;place-items:center;color:transparent;flex:none;transition:background var(--d1) var(--ease),border-color var(--d1) var(--ease),transform var(--d1) var(--ease),color var(--d1) var(--ease)}
+.ck svg{width:15px;height:15px}
+.ck:active{transform:scale(.88)}
+.ck.on{background:var(--accent);border-color:var(--accent);color:#fff}
+/* étiquettes pastel */
+.tag{font-size:12px;font-weight:500;padding:1px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);white-space:nowrap;line-height:1.5}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.ep{background:var(--cyan-bg);color:var(--cyan)}
+.chev{color:var(--dim);display:flex}
+.dayh{display:flex;justify-content:space-between;align-items:baseline;margin:10px 2px 6px;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--stroke)}
+.dayh b{font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dayh span{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.free{width:100%;padding:11px 12px;color:var(--dim);font-size:13.5px;border-radius:8px;text-align:left;box-sizing:border-box;transition:background var(--d1) var(--ease)}
+.free:hover{background:var(--hover);color:var(--muted)}
+.free::before{content:"+ ";font-weight:600}
+p.free::before{content:""}
+.empty{color:var(--muted);font-size:14px;margin:0;padding:14px 16px}
+
+/* barres fines */
+.bar{height:4px;border-radius:2px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:2px;background:var(--accent);transform-origin:left;animation:growX var(--d3) var(--ease) both}
+.brow{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center;width:100%}
+.brow .bar{grid-column:1/-1}
+.brow>span{font-size:14px;display:flex;align-items:center;gap:8px;min-width:0}
+.brow>b{font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
+.srow-b{display:grid;grid-template-columns:30px 1fr auto;gap:6px 12px;align-items:center}
+.srow-b .bar{grid-column:2/-1}
+.srow-b>span:not(.ico){font-size:14px;min-width:0}
+.srow-b>b{font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
+.srow-b .ico{grid-row:span 2}
+@keyframes growX{from{transform:scaleX(0)}to{transform:none}}
+
+.ring{display:grid;place-items:center;position:relative}
+.ring svg{width:160px;height:160px}
+.ring svg circle:first-of-type{stroke:var(--soft)}
+.ring .in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .in b{font-size:32px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.ring .in span{color:var(--muted);font-size:12.5px;margin-top:4px}
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.heat span{font-size:11px;color:var(--muted);text-align:center}
+.heat i{aspect-ratio:1;border-radius:5px;background:var(--soft);display:grid;place-items:center;font-style:normal;font-size:11px;color:var(--muted)}
+.heat i.l1{background:color-mix(in srgb,var(--accent) 25%,var(--surface))}
+.heat i.l2{background:color-mix(in srgb,var(--accent) 55%,var(--surface));color:var(--text)}
+.heat i.l3{background:var(--accent);color:var(--on-accent)}
+.heat i.t{outline:2px solid var(--text);outline-offset:1px}
+.heat i.o{opacity:.35}
+.heat i.ex{box-shadow:inset 0 0 0 2px var(--cyan);color:var(--cyan)}
+
+/* calendrier */
+.cal-hd{display:flex;justify-content:space-between;align-items:center;padding:0 0 10px}
+.cal-hd b{font-weight:600;font-size:15px;text-transform:capitalize}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal .wd{font-size:11px;color:var(--muted);padding-bottom:4px;font-weight:500}
+.cday{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:14px;min-width:0;transition:background var(--d1) var(--ease)}
+.cday:hover{background:var(--hover)}
+.cday.out{color:var(--dim)}
+.cday.today .num{color:#fff;background:var(--down);border-radius:999px;min-width:22px;line-height:22px;font-weight:600}
+.cday.ep{background:var(--cyan-bg);color:var(--cyan);font-weight:600}
+.cday.sel{background:var(--soft);box-shadow:inset 0 0 0 1.5px var(--text);color:var(--text)}
+.dots{display:flex;gap:3px;height:5px}
+.dots i{width:5px;height:5px;border-radius:50%;display:block;background:var(--accent)}
+.dots i.e{background:var(--cyan)}
+.dots i.l{background:var(--warn)}
+.legend{display:flex;gap:6px;flex-wrap:wrap}
+.legend .pill i{width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--accent)}
+
+/* onglets segmentés, puces */
+.seg{display:flex;gap:2px;padding:3px;border-radius:8px;background:var(--soft);overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:1;padding:7px 6px;border-radius:6px;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap;min-width:44px;transition:background var(--d1) var(--ease),color var(--d1) var(--ease)}
+.seg button.on{color:var(--text);background:var(--surface);box-shadow:0 1px 2px var(--shadow),0 0 0 1px var(--stroke)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:13px;color:var(--muted);background:var(--soft)}
+.pill.hi{color:var(--warn);background:var(--warn-bg);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px 6px 8px;border-radius:6px;border:1px solid var(--stroke);background:var(--surface);font-size:13.5px;transition:background var(--d1) var(--ease)}
+.chip svg{color:var(--muted)}
+.chip.on{border-color:var(--accent);background:var(--accent-bg);color:var(--accent)}
+.chip.on svg{color:var(--accent)}
+.iconpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.iconpick button{height:44px;border-radius:8px;border:1px solid var(--stroke);display:grid;place-items:center;background:var(--surface);color:var(--muted)}
+.iconpick button.on{border-color:var(--accent);background:var(--accent-bg);color:var(--accent)}
+
+/* lignes de réglages */
+.srow{width:100%;display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:9px 12px;text-align:left;border-radius:10px;box-sizing:border-box;transition:background var(--d1) var(--ease)}
+.srow.card{background:transparent;border-color:transparent;padding:8px 6px;border-radius:6px}
+.srow:hover{background:var(--hover)}
+.srow+.srow{margin-top:6px}
+.srow .t{min-width:0}
+.srow .t b{display:flex;align-items:center;gap:6px;font-weight:500;font-size:14.5px}
+.srow .t small{display:block;color:var(--muted);font-size:12.5px}
+.srow .v{text-align:right;font-size:14px;font-weight:600;white-space:nowrap}
+.msg.unread .t b{font-weight:700}
+.msg.unread .ico{background:var(--accent-bg);color:var(--accent)}
+.udot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;flex:none}
+.switch{width:36px;height:20px;border-radius:999px;background:var(--stroke-hi);position:relative;transition:background var(--d1) var(--ease);flex:none}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform var(--d2) var(--ease)}
+.switch.on{background:var(--accent)}
+.switch.on::after{transform:translateX(16px)}
+.skins{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.skin{display:flex;align-items:center;gap:10px;padding:12px;text-align:left}
+.skin.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.skin .sw{width:24px;height:24px;border-radius:6px;border:1px solid var(--stroke-hi);flex:none}
+.obj{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:8px 8px 8px 12px}
+.obj+.obj{margin-top:6px}
+.obj .t{text-align:left;min-width:0}
+.obj .t b{display:block;font-weight:500;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.obj .t small{display:block;color:var(--muted);font-size:12px}
+.mini{display:flex;align-items:center;gap:2px}
+.mini button{width:30px;height:30px;border-radius:6px;display:grid;place-items:center;color:var(--muted);transition:background var(--d1) var(--ease)}
+.mini button:hover{background:var(--hover)}
+.tpick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tpick select{-webkit-appearance:auto;appearance:auto;font-size:16px}
+.pers .chip{flex:1;justify-content:center;padding:9px 8px}
+.mini span{min-width:58px;text-align:center;font-variant-numeric:tabular-nums;line-height:1.2}
+.mini span b{display:block;font-size:14.5px;font-weight:600}
+.mini span small{display:block;font-size:11px;color:var(--muted)}
+/* le plan détaillé de la semaine (message de la boîte de réception) */
+.plist{padding:2px 0;overflow:hidden}
+.prow{width:100%;display:grid;grid-template-columns:50px 30px 1fr;gap:12px;align-items:center;padding:9px 14px 9px 12px;text-align:left;box-sizing:border-box}
+.prow+.prow{border-top:1px solid var(--stroke)}
+.prow:hover{background:var(--hover)}
+.prow .pt{display:flex;flex-direction:column;font-variant-numeric:tabular-nums;line-height:1.15}
+.prow .pt b{font-weight:600;font-size:13.5px}
+.prow .pt small{color:var(--muted);font-size:11.5px}
+.prow .t b{display:block;font-weight:500;font-size:14.5px}
+.prow .t small{display:block;color:var(--muted);font-size:12.5px}
+.prow.done{opacity:.5}
+p.free{margin:0}
+.dnav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dnav b{font-weight:700;font-size:16px}
+
+/* formulaires, boutons */
+.field{display:block;width:100%;box-sizing:border-box;padding:10px 12px;border-radius:6px;border:1px solid var(--stroke-hi);background:var(--surface);color:var(--text);min-height:44px;text-align:left;-webkit-appearance:none;appearance:none;transition:box-shadow var(--d1) var(--ease),border-color var(--d1) var(--ease)}
+.field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}
+.field::-webkit-date-and-time-value{text-align:left}
+.field::placeholder{color:var(--dim)}
+textarea.field{min-height:96px;resize:vertical;line-height:1.5}
+.stepper{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;padding:8px 10px;gap:8px}
+.stepper .sb{width:36px;height:36px;border-radius:6px;display:grid;place-items:center;background:var(--soft)}
+.stepper .sv{text-align:center;font-size:22px;font-weight:700}
+.btn{min-height:44px;border-radius:8px;border:1px solid transparent;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:500;padding:0 16px;width:100%;box-sizing:border-box;transition:transform var(--d1) var(--ease),background var(--d1) var(--ease),filter var(--d1) var(--ease)}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{filter:brightness(.94)}
+.btn.ghost{background:var(--surface);border-color:var(--stroke-hi);color:var(--text)}
+.btn.ghost:hover{background:var(--hover)}
+.btn.danger{color:var(--down);background:var(--down-bg)}
+.btn.ok{background:var(--up-bg);color:var(--up)}
+.btn.sm{min-height:36px;font-size:14px;width:auto;padding:0 12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row2 .btn.sm{width:100%;padding:0 10px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.row3 .btn.sm{width:100%;padding:0 6px;gap:4px;font-size:13px}
+.err{color:var(--down);font-size:14px;margin:0}
+.warnbox{background:var(--warn-bg);border-color:transparent}
+.warnbox b{color:var(--warn);font-weight:600}
+
+/* page séance */
+.shead{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:6px;padding:8px 0 4px}
+.shead h2{margin:6px 0 0;font-size:30px;font-weight:700;letter-spacing:-.02em}
+.shead p{margin:0;color:var(--muted);font-size:14px}
+/* rappel de 5 min : un "callout" Notion */
+.recall{background:var(--soft);border-color:transparent}
+.recall b{display:flex;align-items:center;gap:8px;font-weight:600}
+.recall .hint{color:var(--muted)}
+.reveal{white-space:pre-wrap;background:var(--surface);border:1px solid var(--stroke);border-radius:6px;padding:10px 12px;font-size:14px}
+.tip{display:flex;gap:8px;align-items:flex-start}
+.tip>span:first-child{color:var(--muted);display:flex;margin-top:1px}
+.timer{text-align:left;padding:16px}
+.timer .clock{font-size:48px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.timer .ph{color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.timer .bar{margin:12px 0 4px}
+.timer .btn{margin:10px 0 0!important}
+.tbanner{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:10px 14px 10px 12px;text-align:left;width:100%;box-sizing:border-box}
+.tbanner .clk{font-variant-numeric:tabular-nums;font-size:20px;font-weight:700}
+
+/* ===== barre d'onglets plate ; la "bulle" reste attrapable, mais c'est un simple fond gris ===== */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:0 0 env(safe-area-inset-bottom,0px);pointer-events:none;background:color-mix(in srgb,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--stroke)}
+.tabbar-in{pointer-events:auto;position:relative;isolation:isolate;max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:5px 8px;touch-action:none}
+.tab{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:50px;font-size:10.5px;font-weight:500;color:var(--muted);border-radius:8px;min-width:0;transition:color var(--d2) var(--ease),transform var(--d1) var(--ease)}
+.tab svg{width:21px;height:21px}
+.tab span,.lens-tab span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tab.on{color:var(--text);cursor:grab}
+.tab:active{transform:scale(.94)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.tab-pill{position:absolute;left:0;top:5px;bottom:5px;width:0;z-index:2;pointer-events:none;border-radius:8px;transition:transform 300ms var(--ease),width 300ms var(--ease)}
+.tab-pill-in{position:absolute;inset:0;border-radius:inherit}
+.tab-pill-body{position:absolute;inset:0;border-radius:inherit;background:var(--soft);transition:transform 200ms var(--ease),box-shadow 200ms var(--ease)}
+.tab-pill-lens{position:absolute;inset:0;border-radius:inherit;overflow:hidden}
+.lens-row{position:absolute;left:0;top:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:5px 8px;box-sizing:border-box;color:var(--text);transition:transform 300ms var(--ease)}
+.lens-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:50px;font-size:10.5px;font-weight:600;min-width:0}
+.lens-tab svg{width:21px;height:21px}
+.tab-pill-glare{display:none}
+.tab-pill.instant,.tab-pill.instant .lens-row{transition:none!important}
+.tabbar-in.grabbing,.tabbar-in.grabbing .tab{cursor:grabbing}
+/* tenue : le fond se soulève un peu, sans effet de verre */
+.tab-pill.dragging .tab-pill-body{transform:scale(1.04,1.08);box-shadow:0 4px 14px var(--shadow),0 0 0 1px var(--stroke)}
+.tab.drag-over{color:var(--text)}
+
+/* pages qui s'empilent */
+.page{position:fixed;inset:0;z-index:30;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--bg);animation:slide var(--d2) var(--ease) both}
+.page .screen{padding-block:calc(8px + env(safe-area-inset-top,0px)) calc(40px + env(safe-area-inset-bottom,0px))}
+@keyframes slide{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.phead{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;min-height:44px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:-6px -18px 0;padding:6px 18px 0;background:var(--bg);border-bottom:1px solid var(--stroke)}
+.phead h1{margin:0;font-size:15px;font-weight:600;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iconbtn{width:36px;height:36px;border-radius:6px;display:grid;place-items:center;color:var(--text);transition:background var(--d1) var(--ease)}
+.iconbtn:hover{background:var(--hover)}
+.appear>*{animation:rise var(--d2) var(--ease) both}
+.appear>*:nth-child(2){animation-delay:20ms}.appear>*:nth-child(3){animation-delay:40ms}.appear>*:nth-child(4){animation-delay:60ms}.appear>*:nth-child(5){animation-delay:80ms}.appear>*:nth-child(n+6){animation-delay:100ms}
+@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--toast-bg);color:var(--toast-fg);box-shadow:0 6px 20px rgba(0,0,0,.18);padding:9px 14px;border-radius:8px;font-size:14px;width:max-content;max-width:calc(100% - 32px);box-sizing:border-box;
+  display:flex;align-items:center;gap:10px;opacity:0;transform:translate(-50%,8px);transition:opacity var(--d2) var(--ease),transform var(--d2) var(--ease);pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast-ic{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;flex:none;background:var(--up);color:#fff}
+.list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:14.5px}
+.list b{font-weight:600}
+.feat{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:center;font-size:14.5px}
+.foot{text-align:center;color:var(--dim);font-size:12px;margin-top:6px}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.kv span{color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav class="tabbar" aria-label="Navigation"><div class="tabbar-in" id="tabs"></div></nav>
+<div id="pages"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* ============================================================
+   REVIA — planning de révision des semestrielles
+   Tout est gardé sur l'appareil (localStorage). Une seule page, sans serveur.
+   ============================================================ */
+const LS = 'revia-v1';
+const DEFAULT_EXAM = '2026-12-16';
+const DEFAULT_START = '2026-11-16';
+
+/* ---------- icônes (les mêmes que NEXORA) ---------- */
+const sv = (p, s = 22, w = 1.6) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const SUBJ = {
+  sigma:'<path d="M17 5H7l6 7-6 7h10"/>',
+  atom:'<circle cx="12" cy="12" r="1.4" fill="currentColor"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/>',
+  book:'<path d="M12 6.5c-2-1.4-5-1.8-8-1.2v13c3-.6 6-.2 8 1.2 2-1.4 5-1.8 8-1.2v-13c-3-.6-6-.2-8 1.2zM12 6.5v13"/>',
+  flag:'<path d="M5 21V4M5 4.5c3-1.5 6 1.5 9 0s4-1 5 0v8c-1-1-2-1.5-5 0s-6-1.5-9 0"/><path d="M8 7.5h1M11 8.5h1M8 10.5h1M11 11.5h1"/>',
+  temple:'<path d="M3 9l9-5 9 5M5 9v9M9.5 9v9M14.5 9v9M19 9v9M3 20h18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  shield:'<path d="M12 3l8 3v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M12 8a4 4 0 1 0 0 8"/>',
+  flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6A2 2 0 0 0 19 18l-5-9V3"/><path d="M7.5 15h9"/>',
+  leaf:'<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14zM5 19l7-7"/>',
+  palette:'<path d="M12 3a9 9 0 1 0 0 18c1.3 0 1.6-1 1-2-.6-1.2.2-2.5 1.5-2.5H17a4 4 0 0 0 4-4C21 7 17 3 12 3z"/><circle cx="7.5" cy="11" r="1" fill="currentColor"/><circle cx="10" cy="7" r="1" fill="currentColor"/><circle cx="15" cy="7.5" r="1" fill="currentColor"/>',
+  scale:'<path d="M12 4v16M8 20h8M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/>',
+  frame:'<rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 15l5-5 4 4 3-3 4 4"/>',
+  code:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l-2 2 2 2M14 9l2 2-2 2M8 20h8"/>',
+  ball:'<circle cx="12" cy="12" r="9"/><path d="M3.6 9.5c5 1.2 11.8 1.2 16.8 0M3.6 14.5c5-1.2 11.8-1.2 16.8 0M12 3v18"/>',
+  mic:'<path d="M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM6 11a6 6 0 0 0 12 0M12 17v4"/>',
+  music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+  star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>'
+};
+const UI = {
+  home:'<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/>',
+  plan:'<path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6l1.4 1.4L7.5 4.8M3.5 12l1.4 1.4 2.6-2.6M3.5 18l1.4 1.4 2.6-2.6"/>',
+  cal:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/><path d="M8 14h1M11.5 14h1M15 14h1M8 17.5h1M11.5 17.5h1"/>',
+  chart:'<path d="M5 20V11M12 20V5M19 20v-6M3 20h18"/>',
+  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', minus:'<path d="M5 12h14"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>', chev:'<path d="M9 5l7 7-7 7"/>', chevL:'<path d="M15 5l-7 7 7 7"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
+  save:'<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  pen:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  mail:'<rect x="3.5" y="6" width="17" height="12.5" rx="2"/><path d="M4 7l8 6 8-6"/>',
+  palette:SUBJ.palette,
+  trash:'<path d="M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13"/>',
+  download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  play:'<path d="M8 5v14l11-7z" fill="currentColor"/>', stop:'<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>',
+  phone:'<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/>',
+  bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+  reset:'<path d="M4 4v6h6"/><path d="M4.5 15a8 8 0 1 0 1.5-8.5L4 10"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  sliders:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+  slots:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5h4"/>',
+  hourglass:'<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9"/>',
+  report:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 16v1.5M12 12v5.5M15 14v3.5M9 7h6"/>'
+};
+const ui = (k, s, w) => sv(UI[k], s, w);
+const subjIcon = (k, s = 20) => sv(SUBJ[(subj(k) || {}).icon] || SUBJ.star, s, 1.5);
+
+/* ---------- valeurs de départ ---------- */
+/* [clé, nom, icône, heures d'objectif, créneaux longs ?, seulement avant l'éval. de langues ?] */
+const SUBJ_DEF = [
+  ['maths', 'Maths', 'sigma', 14, true, false], ['francais', 'Français', 'book', 12, false, false],
+  ['physique', 'Physique', 'atom', 10, true, false], ['economie', 'Économie', 'scale', 8, false, false],
+  ['anglais', 'Anglais', 'flag', 7, false, true], ['allemand', 'Allemand', 'flag', 6, false, true],
+  ['chimie', 'Chimie', 'flask', 6, false, false], ['histoire', 'Histoire', 'temple', 4, false, false],
+  ['info', 'Informatique', 'code', 3, false, false]
+];
+/* créneaux libres de chaque semaine : [jour (0 = lundi), heure ('' = sans horaire), minutes] */
+const SLOTS_DEF = [[0,'13:00',120],[0,'17:30',120],[1,'19:00',30],[2,'09:00',180],[2,'15:00',90],[3,'19:00',30],[4,'09:00',60],[4,'17:30',60],[5,'',180],[6,'',180]];
+/* le planning fait à la main : [jour, heure, matière, minutes] */
+const WEEK_A = [[0,'13:00','maths',60],[0,'14:00','francais',60],[0,'17:30','anglais',60],[0,'18:30','allemand',60],[1,'19:00','allemand',30],
+  [2,'09:00','maths',60],[2,'10:00','physique',60],[2,'11:00','anglais',60],[2,'15:00','economie',60],[2,'16:00','histoire',30],[3,'19:00','anglais',30],
+  [4,'09:00','francais',60],[4,'17:30','allemand',60],[5,'','maths',60],[5,'','physique',60],[5,'','anglais',60],
+  [6,'','chimie',60],[6,'','francais',30],[6,'','allemand',30],[6,'','economie',30],[6,'','info',30]];
+const WEEK_B = [[0,'13:00','maths',60],[0,'14:00','francais',60],[0,'17:30','physique',60],[0,'18:30','economie',60],[1,'19:00','histoire',30],
+  [2,'09:00','maths',60],[2,'10:00','francais',60],[2,'11:00','chimie',60],[2,'15:00','physique',60],[2,'16:00','economie',30],[3,'19:00','francais',30],
+  [4,'09:00','maths',60],[4,'17:30','francais',60],[5,'','maths',60],[5,'','physique',60],[5,'','histoire',60],
+  [6,'','info',60],[6,'','economie',60],[6,'','chimie',60]];
+/* thèmes de la version « papier » (réglage séparé de celui de la version nuit : settings.look) */
+const SKINS = [['clair', 'Clair', '#FFFFFF'], ['creme', 'Crème', '#FBF8F1'], ['gris', 'Gris', '#F1F1EF'], ['sombre', 'Sombre', '#191919']];
+const SKIN_BG = {clair: '#FFFFFF', creme: '#FBF8F1', gris: '#F7F7F5', sombre: '#191919'};
+const MILESTONES = [30, 25, 20, 15, 10, 5, 1, 0];
+const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+/* ---------- dates (toujours au format 'AAAA-MM-JJ', heure locale) ---------- */
+const pd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const addD = (s, n) => { const d = pd(s); return iso(new Date(d.getFullYear(), d.getMonth(), d.getDate() + n)); };
+const diffD = (a, b) => Math.round((pd(b) - pd(a)) / 864e5);
+const todayS = () => iso(new Date());
+const wday = s => (pd(s).getDay() + 6) % 7;
+const monday = s => addD(s, -wday(s));
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const fmt = (s, o) => pd(s).toLocaleDateString('fr-CH', o);
+const dLong = s => cap(fmt(s, {weekday: 'long', day: 'numeric', month: 'long'}));
+const dShort = s => cap(fmt(s, {weekday: 'short', day: 'numeric', month: 'short'}));
+const dDay = s => fmt(s, {day: 'numeric', month: 'long'}).replace(/^1 /, '1er ');
+const nowHM = () => { const n = new Date(); return `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`; };
+const addT = (t, m) => { const [h, mi] = t.split(':').map(Number), x = h * 60 + mi + m; return `${String(Math.floor(x / 60) % 24).padStart(2, '0')}:${String(x % 60).padStart(2, '0')}`; };
+const isD = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+
+/* ---------- état ---------- */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+function defaultPlan(start){
+  const out = [], mon = monday(start);
+  for (let w = 0; w < 4; w++) (w < 2 ? WEEK_A : WEEK_B).forEach(([d, t, s, m], i) => out.push({id: uid(), d: addD(mon, w * 7 + d), t, k: i, s, m, done: false, at: null, note: ''}));
+  return out;
+}
+function fresh(){
+  return {v: 2, profile: {first: ''}, settings: {skin: 'bleu', notif: false}, exam: DEFAULT_EXAM, planStart: DEFAULT_START, lang: '',
+    subjects: SUBJ_DEF.map(([k, name, icon, h, long, lang]) => ({k, name, icon, h, long, lang})),
+    slots: SLOTS_DEF.map(([d, t, m]) => ({id: uid(), d, t, m})),
+    sessions: defaultPlan(DEFAULT_START), epreuves: [], inbox: {got: {}, read: {}, hidden: {}}, welcomed: false, timer: null};
+}
+function normalize(s){
+  if (!s || typeof s !== 'object' || !Array.isArray(s.sessions)) return null;
+  const f = fresh(), out = Object.assign(f, s);
+  out.v = 2;
+  out.profile = Object.assign({first: ''}, s.profile || {});
+  out.settings = Object.assign({skin: 'bleu', notif: false}, s.settings || {});
+  if (!isD(out.exam)) out.exam = DEFAULT_EXAM;
+  if (!isD(out.planStart)) out.planStart = DEFAULT_START;
+  if (!isD(out.lang)) out.lang = '';
+  /* version 1 : matières en objet avec couleurs, séances avec un numéro de jour */
+  if (!Array.isArray(s.subjects)){
+    out.subjects = fresh().subjects;
+    if (s.subjects && typeof s.subjects === 'object') out.subjects.forEach(x => { if (s.subjects[x.k] && s.subjects[x.k].name) x.name = s.subjects[x.k].name; });
+  } else out.subjects = s.subjects.filter(x => x && x.k).map(x => Object.assign({name: 'Matière', icon: 'star', h: 0, long: false, lang: false}, x));
+  out.slots = Array.isArray(s.slots) ? s.slots.filter(x => x && typeof x.d === 'number').map(x => Object.assign({id: uid(), t: '', p: '', m: 60}, x)) : fresh().slots;
+  out.sessions = s.sessions.filter(x => x && x.s && (isD(x.d) || typeof x.o === 'number')).map(x => {
+    const y = Object.assign({t: '', k: 0, m: 60, done: false, at: null, note: ''}, x, {id: x.id || uid()});
+    if (!isD(y.d)) y.d = addD(out.planStart, x.o);
+    delete y.o; return y;
+  });
+  /* deux sortes d'échéances : les semestrielles (kind 'sem') et les évaluations d'avant (kind 'eval') */
+  out.epreuves = Array.isArray(s.epreuves) ? s.epreuves.filter(e => e && isD(e.date)).map(e => Object.assign({kind: 'sem', t: '', p: '', title: ''}, e)) : [];
+  /* ancienne version : une seule date pour l'anglais ET l'allemand → une évaluation pour chacun, modifiable séparément */
+  if (isD(out.lang)){
+    out.subjects.filter(x => x.lang).forEach(x => { if (!out.epreuves.some(e => e.kind === 'eval' && e.s === x.k)) out.epreuves.push({id: uid(), kind: 'eval', s: x.k, title: '', date: out.lang, t: '', p: ''}); });
+    out.lang = '';
+  }
+  out.inbox = Object.assign({got: {}, read: {}, hidden: {}, meta: {}}, s.inbox || {});
+  return out;
+}
+function load(){ try { return normalize(JSON.parse(localStorage.getItem(LS))); } catch (e){ return null; } }
+let saveOk = true;
+function save(){ try { localStorage.setItem(LS, JSON.stringify(state)); saveOk = true; } catch (e){ saveOk = false; } }
+let state = load() || fresh();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+/* ---------- repères du planning ---------- */
+const subj = k => state.subjects.find(x => x.k === k);
+const sname = k => (subj(k) || {name: 'Matière supprimée'}).name;
+const epSorted = () => state.epreuves.slice().sort((a, b) => (a.date + (a.t || '')) < (b.date + (b.t || '')) ? -1 : 1);
+const isEval = e => e.kind === 'eval';
+const semSorted = () => epSorted().filter(e => !isEval(e));
+const evals = () => epSorted().filter(isEval);
+const epKind = e => isEval(e) ? 'Évaluation' : 'Semestrielle';
+/* le compte à rebours vise la première semestrielle entrée dans le calendrier, sinon la date réglée à la main */
+const exam = () => { const e = semSorted()[0]; return e ? e.date : state.exam; };
+const lastDay = () => addD(exam(), -1);
+const daysLeft = () => diffD(todayS(), exam());
+function weeks(){
+  const first = monday(state.planStart);
+  let last = monday(lastDay() < state.planStart ? state.planStart : lastDay());
+  state.sessions.forEach(s => { if (s.d >= first && monday(s.d) > last) last = monday(s.d); });
+  const out = []; for (let w = first; w <= last; w = addD(w, 7)) out.push(w);
+  return out;
+}
+const weekIdx = mon => Math.round(diffD(monday(state.planStart), mon) / 7);
+const isFinal = mon => weekIdx(mon) >= 4 && exam() >= mon && exam() <= addD(mon, 6);
+const weekName = mon => isFinal(mon) ? 'Derniers jours' : `Semaine ${weekIdx(mon) + 1}`;
+const weekShort = mon => isFinal(mon) ? 'Fin' : `S${weekIdx(mon) + 1}`;
+function weekDays(mon){ const out = []; for (let i = 0; i < 7; i++){ const d = addD(mon, i); if ((d >= state.planStart && d < exam()) || state.sessions.some(s => s.d === d)) out.push(d); } return out; }
+function weekRange(mon){ const days = weekDays(mon), a = days[0] || mon, b = days[days.length - 1] || addD(mon, 6); return a === b ? fmt(a, {day: 'numeric', month: 'short'}) : `${pd(a).getDate()}${pd(a).getMonth() !== pd(b).getMonth() ? ' ' + fmt(a, {month: 'short'}) : ''} – ${fmt(b, {day: 'numeric', month: 'short'})}`; }
+function planDays(){ const out = []; for (let d = state.planStart; d < exam() && out.length < 120; d = addD(d, 1)) out.push(d); return out; }
+/* nombre de semaines complètes de révision (4 au départ), pour les heures par semaine */
+const planWeeks = () => Math.max(1, Math.floor(planDays().length / 7));
+
+/* ---------- format ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const dur = m => m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ' ' + String(m % 60).padStart(2, '0') : ''}`;
+const durR = m => dur(Math.max(5, Math.round(m / 5) * 5));
+const hrs = m =>String(Math.round(m / 6) / 10).replace('.', ',');
+const hNum = h => String(h).replace('.', ',');
+const hm = t => t ? t.replace(':', 'h') : '';
+const initials = n => (n || '').trim().charAt(0).toUpperCase() || '·';
+const plural = (n, a, b) => `${n} ${n > 1 ? b : a}`;
+const jLabel = n => n > 0 ? `J-${n}` : n === 0 ? 'Jour J' : 'Passée';
+
+/* ---------- séances ---------- */
+const byId = id => state.sessions.find(s => s.id === id);
+/* trois façons de placer une séance ou un créneau : une heure précise, un moment de la journée, ou sans horaire */
+const PERIODS = {matin: ['Matin', 480], aprem: ['Après-midi', 780], soir: ['Soir', 1080]};
+const perLabel = p => (PERIODS[p] || [''])[0];
+/* ordre dans la journée : heure précise à sa place, "matin" vers 8h, "après-midi" vers 13h, "soir" vers 18h, sans horaire à la fin */
+const dayKey = s => s.t ? toMin(s.t) : PERIODS[s.p] ? PERIODS[s.p][1] - .5 : 2000;
+const sortDay = list => list.slice().sort((a, b) => dayKey(a) - dayKey(b) || a.k - b.k);
+const ofDay = d => sortDay(state.sessions.filter(s => s.d === d));
+function slotLabel(s){
+  if (s.t) return `${hm(s.t)}–${hm(addT(s.t, s.m))}`;
+  if (PERIODS[s.p]) return perLabel(s.p);
+  return `Bloc ${ofDay(s.d).filter(x => !x.t && !PERIODS[x.p]).indexOf(s) + 1}`;
+}
+/* libellé d'un créneau libre */
+const slotTxt = x => x.t ? `${hm(x.t)} – ${hm(addT(x.t, x.m))}` : PERIODS[x.p] ? perLabel(x.p) : 'Sans horaire';
+const total = list => list.reduce((a, s) => a + s.m, 0);
+const doneMin = list => total(list.filter(s => s.done));
+const doneOf = k => doneMin(state.sessions.filter(s => s.s === k));
+const objMin = () => state.subjects.reduce((a, x) => a + Math.round(x.h * 60), 0);
+function dayStatus(d){ const l = ofDay(d); if (!l.length) return 'x'; const n = l.filter(s => s.done).length; return n === l.length ? 'f' : n ? 'p' : ''; }
+function streak(){
+  let n = 0, d = todayS();
+  if (d >= exam()) d = lastDay();
+  if (dayStatus(d) !== 'f') d = addD(d, -1);
+  for (; d >= state.planStart; d = addD(d, -1)){ const st = dayStatus(d); if (st === 'x') continue; if (st === 'f') n++; else break; }
+  return n;
+}
+const overdue = () => state.sessions.filter(s => s.d < todayS() && s.d >= state.planStart && !s.done).sort((a, b) => a.d < b.d ? -1 : 1);
+function nextSession(){ const cur = nowHM(); return ofDay(todayS()).find(s => !s.done && (!s.t || addT(s.t, s.m) > cur)) || null; }
+function previousOf(s){
+  const day = ofDay(s.d);
+  const all = state.sessions.filter(x => x.s === s.s && x.id !== s.id && (x.d < s.d || (x.d === s.d && day.indexOf(x) < day.indexOf(s)))).sort((a, b) => a.d < b.d ? 1 : -1);
+  return all.find(x => x.done) || all[0] || null;
+}
+
+/* ---------- créneaux et génération du planning ---------- */
+const sortSlots = l => l.slice().sort((a, b) => dayKey(a) - dayKey(b));
+/* découpe un créneau en séances : 1 h tant qu'il reste au moins 2 h, puis le reste d'un bloc (1 h 45 → 1 h + 45 min, 1 h 15 → 1 h 15) */
+function cutSlot(m){
+  const out = [];
+  while (m >= 30){
+    const c = m >= 120 ? 60 : m >= 90 ? 60 : m;
+    out.push(c); m -= c;
+  }
+  return out;
+}
+function slotChunks(from, to){
+  const out = [], tS = todayS(), cur = nowHM();
+  for (let d = from; d <= to; d = addD(d, 1)){
+    sortSlots(state.slots.filter(x => x.d === wday(d))).forEach((sl, si) => {
+      let t = sl.t, k = 0;
+      const p = sl.t ? '' : (sl.p || '');
+      /* aujourd'hui : on ne place rien dans un moment déjà passé */
+      const gone = d === tS && (t ? false : p ? toMin(cur) >= PERIODS[p][1] + (p === 'soir' ? 240 : 300) : false);
+      cutSlot(sl.m).forEach(c => {
+        if (!gone && !(d === tS && t && t <= cur)) out.push({d, t, p, m: c, k: si * 10 + k});
+        if (t) t = addT(t, c);
+        k++;
+      });
+    });
+  }
+  return out;
+}
+const capacity = (from, to) => from > to ? 0 : slotChunks(from, to).reduce((a, c) => a + c.m, 0);
+/* Refait les séances à venir à partir des objectifs et des créneaux libres.
+   Les séances faites et les jours passés ne bougent pas. Règles : chaque matière revient tous les 2-3 jours,
+   pas deux fois la même matière dans la journée si possible, maths/physique sur les créneaux longs,
+   les langues avant leur évaluation, et des séances réparties jusqu'au bout. */
+function regenerate(){
+  const tS = todayS(), from = tS > state.planStart ? tS : state.planStart, to = lastDay();
+  /* on garde : les séances faites, les jours passés, et les séances que tu as ajoutées ou modifiées toi-même */
+  state.sessions = state.sessions.filter(s => s.done || s.own || s.d < from);
+  if (from > to) return 0;
+  let ch = slotChunks(from, to);
+  /* les créneaux déjà occupés par une séance gardée ne sont pas réutilisés */
+  const kept = state.sessions.filter(s => s.d >= from && s.d <= to);
+  ch = ch.filter(c => !c.t || !kept.some(s => s.d === c.d && s.t && toMin(s.t) < toMin(c.t) + c.m && toMin(s.t) + s.m > toMin(c.t)));
+  /* séances gardées sans heure précise : elles prennent la place d'un créneau du même moment (matin, après-midi, soir ou sans horaire) */
+  const looseUsed = {}, lk = (d, p) => d + '|' + (PERIODS[p] ? p : '');
+  kept.filter(s => !s.t).forEach(s => looseUsed[lk(s.d, s.p)] = (looseUsed[lk(s.d, s.p)] || 0) + s.m);
+  /* un bloc à moitié pris garde le reste ; un reste trop court (moins de 30 min) s'ajoute au bloc suivant */
+  const carry = {};
+  ch = ch.filter(c => {
+    const key = lk(c.d, c.p); if (c.t) return true;
+    if (carry[key]){ c.m += carry[key]; carry[key] = 0; }
+    if (!(looseUsed[key] > 0)) return true;
+    if (looseUsed[key] >= c.m){ looseUsed[key] -= c.m; return false; }
+    c.m -= looseUsed[key]; looseUsed[key] = 0;
+    if (c.m < 30){ carry[key] = c.m; return false; }
+    return true;
+  });
+  /* ce qui reste à placer = objectif − séances faites − séances gardées à venir (au quart d'heure près) */
+  const keptMin = k => total(state.sessions.filter(s => s.s === k && !s.done && s.d >= from));
+  const rem = {}; state.subjects.forEach(x => rem[x.k] = Math.max(0, Math.round((x.h * 60 - doneOf(x.k) - keptMin(x.k)) / 15) * 15));
+  const capT = ch.reduce((a, c) => a + c.m, 0);
+  let need = Object.values(rem).reduce((a, b) => a + b, 0);
+  const wSum = state.subjects.reduce((a, x) => a + Math.max(0, x.h), 0);
+  if (!capT || !wSum) return 0;
+  /* tout ton temps libre est utilisé : s'il y a plus de créneaux que d'heures d'objectif,
+     le surplus est partagé entre les matières selon leur objectif (plus pour maths et français) */
+  regenerate.extra = 0;
+  if (capT > need){
+    const extra = capT - need;
+    state.subjects.forEach(x => { const add = Math.floor(extra * Math.max(0, x.h) / wSum / 15) * 15; rem[x.k] += add; });
+    need = Object.values(rem).reduce((a, b) => a + b, 0);
+    regenerate.extra = extra;
+  }
+  /* avec du temps en plus, chaque créneau est rempli ; sinon (objectifs plus grands que le temps libre) tout est rempli aussi, au prorata */
+  const ratio = regenerate.extra ? 1 : Math.min(1, need / capT);
+  /* date limite de chaque matière : sa prochaine évaluation, si la matière est réglée sur « seulement avant son évaluation »
+     (par ex. l'anglais le 1er décembre et l'allemand le 3) */
+  const dl = {};
+  state.subjects.forEach(x => { if (!x.lang) return; const e = evals().find(e => e.s === x.k && e.date > from); if (e) dl[x.k] = e.date; });
+  const n = ch.length, sufAll = Array(n + 1).fill(0), suf = {};
+  for (let i = n - 1; i >= 0; i--) sufAll[i] = sufAll[i + 1] + ch[i].m;
+  [...new Set(Object.values(dl))].forEach(D => { const a = Array(n + 1).fill(0); for (let i = n - 1; i >= 0; i--) a[i] = a[i + 1] + (ch[i].d < D ? ch[i].m : 0); suf[D] = a; });
+  const last = {}; state.sessions.forEach(s => { if (!last[s.s] || s.d > last[s.s]) last[s.s] = s.d; });
+  const out = [], rem0 = Object.assign({}, rem), alloc = {};
+  /* chaque matière doit avoir avancé au même rythme que le temps qui passe : on choisit celle qui a le plus de retard */
+  const pick = (c, i, m, not, force) => {
+    let best = null, bs = -Infinity;
+    const prog = 1 - sufAll[i + 1] / capT;
+    for (const x of state.subjects){
+      if ((!force && rem[x.k] < 30) || x.k === not || !(x.h > 0)) continue;
+      const D = dl[x.k];
+      if (D && c.d >= D) continue;
+      /* une matière avec date limite prend un peu d'avance pour être sûre d'être finie à temps */
+      const progD = D && suf[D][0] ? 1 - suf[D][i + 1] / suf[D][0] : prog;
+      const deficit = rem0[x.k] * (D ? Math.min(1, progD * 1.25) : prog) - (alloc[x.k] || 0);
+      let sc = Math.max(1, deficit + 90);
+      const gap = last[x.k] ? diffD(last[x.k], c.d) : 99;
+      sc *= gap === 0 ? .12 : gap === 1 ? .75 : gap === 2 ? 1 : gap >= 99 ? 1.4 : 1.2;
+      if (m >= 60) sc *= x.long ? 1.35 : 1; else sc *= x.long ? .55 : 1.15;
+      /* s'il ne reste presque plus de place avant son évaluation, elle passe devant */
+      if (D){ const needD = state.subjects.filter(y => dl[y.k] === D).reduce((a, y) => a + Math.max(0, rem[y.k]), 0); if (needD >= suf[D][i + 1] * ratio * .7) sc *= 8; }
+      if (sc > bs){ bs = sc; best = x; }
+    }
+    return best;
+  };
+  let acc = 0;
+  for (let i = 0; i < n; i++){
+    const c = ch[i];
+    acc += ratio * c.m;
+    if (acc < c.m * .5 - 1e-9) continue;
+    acc -= c.m;
+    /* si toutes les matières ont leur compte, le créneau est quand même rempli (rien ne reste vide) */
+    const a = pick(c, i, c.m) || pick(c, i, c.m, null, true);
+    if (!a) continue;
+    const room = x => rem[x.k] >= 30 ? rem[x.k] : Infinity;
+    /* petites matières (4 h ou moins) : des séances de 30 min, pour qu'elles reviennent plus souvent */
+    let m1 = Math.min(!a.long && rem0[a.k] <= 240 && c.m >= 60 ? 30 : c.m, room(a));
+    if (c.m - m1 > 0 && c.m - m1 < 30) m1 = c.m;
+    rem[a.k] -= m1; alloc[a.k] = (alloc[a.k] || 0) + m1; last[a.k] = c.d;
+    out.push({id: uid(), d: c.d, t: c.t, p: c.p || '', k: c.k, s: a.k, m: m1, done: false, at: null, note: ''});
+    /* le reste du créneau (au moins 30 min) va à une autre matière */
+    if (c.m - m1 >= 30){
+      const b = pick(c, i, c.m - m1, a.k) || pick(c, i, c.m - m1, a.k, true);
+      if (b){ const m2 = Math.min(c.m - m1, room(b)); rem[b.k] -= m2; alloc[b.k] = (alloc[b.k] || 0) + m2; last[b.k] = c.d; out.push({id: uid(), d: c.d, t: c.t ? addT(c.t, m1) : '', p: c.p || '', k: c.k + .5, s: b.k, m: m2, done: false, at: null, note: ''}); }
+    }
+  }
+  state.sessions.push(...out);
+  /* ce qui manque vraiment par rapport aux objectifs (le temps en plus ne compte pas) */
+  regenerate.left = state.subjects.reduce((a, x) => { const miss = x.h * 60 - total(state.sessions.filter(s => s.s === x.k)); return a + (miss >= 30 ? miss : 0); }, 0);
+  return out.length;
+}
+
+/* ---------- boîte de réception ---------- */
+let syncing = false;
+function syncInbox(){
+  if (syncing) return; syncing = true;
+  const ib = state.inbox, tS = todayS(), added = [];
+  const add = (id, date) => { if (!ib.got[id]){ ib.got[id] = date; added.push(id); } };
+  if (state.welcomed) add('hello', tS);
+  /* un bilan pour chaque semaine terminée */
+  weeks().forEach(w => { const sun = addD(w, 6); if (sun < tS && sun >= state.planStart && state.sessions.some(s => s.d >= w && s.d <= sun)) add('w' + w, addD(w, 7)); });
+  /* J-30, J-25 … J-1 : seulement le dernier passé (pas tous d'un coup si on installe l'app tard) */
+  const left = daysLeft(), m = MILESTONES.filter(x => x >= left).pop();
+  if (left >= 0 && m != null && state.welcomed) add(`j${m}_${exam()}`, addD(exam(), -m));
+  if (added.length){
+    save();
+    added.filter(id => id !== 'hello').forEach(id => { const i = msgInfo(id); if (i) notify(i.title, i.sub); });
+  }
+  syncing = false;
+}
+function messages(){
+  return Object.entries(state.inbox.got).filter(([id]) => !state.inbox.hidden[id] && msgInfo(id)).sort((a, b) => a[1] < b[1] ? 1 : a[1] > b[1] ? -1 : a[0] < b[0] ? 1 : -1).map(([id, date]) => ({id, date, read: !!state.inbox.read[id]}));
+}
+const unreadCount = () => messages().filter(m => !m.read).length;
+/* une évaluation change le planning si sa matière doit être révisée avant elle (ou si c'est une semestrielle : la fin du planning bouge) */
+const evalMoves = e => !isEval(e) || !!(subj(e.s) && subj(e.s).lang);
+/* Refait le planning et envoie dans la boîte de réception le plan détaillé de la semaine */
+function replan(reason){
+  regenerate.left = 0;
+  const n = regenerate();
+  state.slotsDirty = false; weekSel = null;
+  if (!n) return 0;
+  const tS = todayS(), W = weeks(), id = 'p' + Date.now().toString(36);
+  let w = W.includes(monday(tS)) ? monday(tS) : (tS < W[0] ? W[0] : W[W.length - 1]);
+  /* s'il reste moins de 3 jours de révision dans la semaine en cours, le plan montre la semaine suivante */
+  const restDays = weekDays(w).filter(d => d >= tS).length, i = W.indexOf(w);
+  if (restDays < 3 && i >= 0 && i < W.length - 1) w = W[i + 1];
+  state.inbox.meta = state.inbox.meta || {};
+  /* l'ancien plan n'est plus à jour : seul le dernier reste dans la boîte */
+  Object.keys(state.inbox.got).forEach(k => { if (k[0] === 'p') state.inbox.hidden[k] = true; });
+  state.inbox.meta[id] = {reason, w, n, left: regenerate.left || 0, extra: regenerate.extra || 0, at: Date.now()};
+  state.inbox.got[id] = tS;
+  notify('Ton nouveau planning est prêt', 'Le plan détaillé de ta semaine est dans ta boîte de réception.');
+  return n;
+}
+function msgInfo(id){
+  if (id === 'hello') return {icon: ui('mail', 20), title: 'Bienvenue sur Revia', sub: 'Ce que tu recevras ici'};
+  if (id[0] === 'p'){
+    const m = (state.inbox.meta || {})[id]; if (!m || !isD(m.w)) return null;
+    return {icon: ui('plan', 20), title: 'Ton nouveau planning', sub: `${m.reason === 'slots' ? 'Nouveaux créneaux libres' : m.reason === 'evals' ? 'Évaluations mises à jour' : 'Nouveaux objectifs'} · plan détaillé de ta semaine`};
+  }
+  if (id[0] === 'w'){
+    const w = id.slice(1); if (!isD(w)) return null;
+    const l = state.sessions.filter(s => s.d >= w && s.d <= addD(w, 6));
+    return {icon: ui('report', 20), title: `Bilan · ${weekName(w)}`, sub: `${weekRange(w)} · ${hrs(doneMin(l))} h faites sur ${hrs(total(l))} h`};
+  }
+  if (id[0] === 'j'){
+    const [n, ex] = id.slice(1).split('_'), k = +n; if (!isD(ex)) return null;
+    return {icon: ui('hourglass', 20), title: k === 0 ? 'C’est le jour J' : k === 1 ? 'C’est demain !' : `Plus que ${k} jours`, sub: `${k === 0 ? 'Les semestrielles commencent aujourd’hui' : 'Avant les semestrielles'} · ${dLong(ex)}`};
+  }
+  return null;
+}
+
+/* ---------- petits outils d'interface ---------- */
+let toastT;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.innerHTML = `<span class="toast-ic">${ui('check', 14, 2.6)}</span><span>${esc(msg)}</span>`;
+  el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200);
+}
+const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e){} };
+const RM = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+function applySkin(){
+  const k = SKIN_BG[state.settings.look] ? state.settings.look : 'clair';
+  if (k === 'clair') document.documentElement.removeAttribute('data-skin'); else document.documentElement.setAttribute('data-skin', k);
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', SKIN_BG[k]);
+}
+const chevron = () => `<span class="chev">${ui('chev', 16, 2)}</span>`;
+function sessRow(s, extra = ''){
+  const next = extra.includes('next'), late = extra.includes('late');
+  return `<div class="sess card ${s.done ? 'done' : ''} ${next ? 'next' : ''}">
+    <button class="open" data-act="open" data-id="${s.id}"><span class="ico sm">${subjIcon(s.s, 18)}</span><span class="t"><b>${esc(sname(s.s))}${next ? '<span class="tag">Ensuite</span>' : ''}${late ? `<span class="tag warn">${esc(dShort(s.d))}</span>` : ''}</b><small>${slotLabel(s)} · ${dur(s.m)}</small></span></button>
+    <button class="ck ${s.done ? 'on' : ''}" data-act="toggle" data-id="${s.id}" aria-label="${s.done ? 'Décocher' : 'Cocher'} ${esc(sname(s.s))}">${ui('check', 18, 2.6)}</button>
+  </div>`;
+}
+const epTitle = e => e.s ? sname(e.s) : (e.title || 'Épreuve');
+/* étiquette courte pour les jours du planning : "Semestrielle Maths", "Éval. Anglais" */
+const epTag = e => `<span class="tag ${isEval(e) ? 'warn' : 'ep'}">${isEval(e) ? 'Éval.' : 'Semestrielle'} ${esc(epTitle(e))}</span>`;
+function epRow(e){
+  const n = diffD(todayS(), e.date);
+  return `<button class="card srow" data-act="ep-edit" data-id="${e.id}"><span class="ico ${isEval(e) ? 'warn' : 'ep'}">${e.s ? subjIcon(e.s) : ui('target', 20)}</span>
+    <span class="t"><b>${esc(epTitle(e))}</b><small>${epKind(e)} · ${esc(dLong(e.date))}${e.t ? ' · ' + hm(e.t) : PERIODS[e.p] ? ' · ' + perLabel(e.p) : ''}</small></span><span class="v num">${jLabel(n)}</span></button>`;
+}
+function ringSvg(p, id){
+  const r = 70, c = 2 * Math.PI * r, v = Math.max(0, Math.min(1, p));
+  return `<svg viewBox="0 0 170 170" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--ring-a)"/><stop offset="1" stop-color="var(--ring-b)"/></linearGradient></defs>
+    <circle cx="85" cy="85" r="${r}" fill="none" stroke="var(--stroke)" stroke-width="10"/>
+    <circle cx="85" cy="85" r="${r}" fill="none" stroke="url(#${id})" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - v)}" transform="rotate(-90 85 85)" style="transition:stroke-dashoffset .8s var(--ease)"/></svg>`;
+}
+const bar = p => `<div class="bar"><i style="width:${Math.round(Math.max(0, Math.min(1, p)) * 100)}%"></i></div>`;
+const bigJ = n => n > 0 ? `J<span class="mn">-</span>${n}` : n === 0 ? 'Jour J' : 'En cours';
+
+/* ---------- conseils de stratégie (jamais le contenu : c'est toi qui choisis) ---------- */
+function phaseTip(){
+  const tS = todayS(), left = daysLeft();
+  if (left < 0) return {t: 'Les semestrielles sont en cours', d: 'Relis tes fiches la veille de chaque épreuve, dors bien, et rien de nouveau. Tu as fait le travail.'};
+  if (left === 0) return {t: 'C’est le jour J', d: 'Pas de nouvelle matière aujourd’hui. Respire, relis tes fiches, et bonne chance !'};
+  if (left <= 3) return {t: 'Derniers jours', d: 'Plus rien de nouveau : relis tes fiches et refais les exercices ratés.'};
+  if (tS < state.planStart) return {t: 'Avant de commencer', d: `Ton planning démarre ${fmt(state.planStart, {weekday: 'long', day: 'numeric', month: 'long'})}. Prépare tes classeurs et tes fiches pour être prêt dès la première séance.`};
+  const ne = evals().find(e => e.date >= tS && e.date < exam());
+  if (ne){ const k = diffD(tS, ne.date); return {t: `Évaluation de ${epTitle(ne)} ${k === 0 ? "aujourd'hui" : k === 1 ? 'demain' : `dans ${k} jours`}`, d: `${epTitle(ne)} revient plus souvent jusque-là, sans lâcher les autres matières. Chaque matière revient tous les 2 à 3 jours : c'est la répétition espacée.`}; }
+  if (left <= 10) return {t: 'Dernière semaine · conditions réelles', d: 'Entraîne-toi avec d’anciennes semestrielles chronométrées en maths et en physique.'};
+  const w = weekIdx(monday(tS));
+  if (w < 2) return {t: `Semaine ${w + 1} · c'est parti`, d: "Chaque matière revient tous les 2 à 3 jours : c'est la répétition espacée. Ajoute tes évaluations dans le calendrier pour que l'app en tienne compte."};
+  return {t: 'Semestrielles en vue', d: 'Plusieurs matières par jour plutôt qu’un seul gros bloc, et 5 min de rappel au début de chaque séance.'};
+}
+function sessionTips(s){
+  const out = [], left = diffD(s.d, exam()), x = subj(s.s);
+  const ep = epSorted().find(e => e.s === s.s && e.date >= s.d);
+  if (ep){ const n = diffD(s.d, ep.date), w = isEval(ep) ? 'Évaluation' : 'Semestrielle'; out.push(n === 0 ? `${w} de ${sname(s.s)} ce jour-là.` : `${w} de ${sname(s.s)} ${n === 1 ? 'le lendemain' : `${n} jours plus tard`} (${dDay(ep.date)}).`); }
+  if (left <= 3 && left > 0) out.push('Derniers jours : plus rien de nouveau. Relis tes fiches et refais les exercices ratés.');
+  else if (left <= 10 && left > 3 && x && x.long) out.push('Dernière semaine : fais une ancienne semestrielle en conditions réelles, chronométrée.');
+  if (s.m <= 30) out.push('Créneau court : idéal pour une révision rapide (vocabulaire, définitions, fiches).');
+  else if (x && x.long && s.m >= 60) out.push('Créneau long : parfait pour les exercices.');
+  return out;
+}
+
+/* ---------- état de l'interface ---------- */
+let tab = 'home', animNext = true, weekSel = null;
+let calM = todayS().slice(0, 7), calSel = todayS();
+const stack = [];
+
+/* ============================================================ écrans (onglets) */
+function homeScreen(){
+  const tS = todayS(), left = daysLeft(), ex = exam();
+  const name = (state.profile.first || '').trim(), h = new Date().getHours();
+  const hello = h < 5 ? 'Bonne nuit' : h < 18 ? 'Bonjour' : 'Bonsoir';
+  const sub = left > 1 ? 'avant les semestrielles' : left === 1 ? 'Les semestrielles commencent demain' : left === 0 ? 'Les semestrielles commencent aujourd’hui' : 'Les semestrielles sont en cours';
+  const days = planDays();
+  const road = days.map(d => `<i class="${dayStatus(d)} ${d === tS ? 't' : ''}"></i>`).join('');
+  const done = doneMin(state.sessions), obj = objMin();
+  const todayL = tS >= state.planStart && tS < ex ? ofDay(tS) : [];
+  const nx = nextSession(), late = overdue(), tip = phaseTip(), unread = unreadCount();
+  const eps = epSorted().filter(e => e.date >= tS).slice(0, 4);
+  let todayBlock = '';
+  if (tS < state.planStart){
+    todayBlock = `<h2 class="h2">Première journée <small>${esc(dLong(state.planStart))}</small></h2>
+      <p class="hint">Ton planning commence dans ${plural(diffD(tS, state.planStart), 'jour', 'jours')}. Voici ce qui t'attend :</p>
+      <div>${ofDay(state.planStart).map(s => sessRow(s)).join('') || '<p class="empty card">Aucune séance ce jour-là.</p>'}</div>`;
+  } else if (tS < ex){
+    todayBlock = `<h2 class="h2">Aujourd'hui <small>${esc(dLong(tS))}</small></h2>
+      <div>${todayL.length ? todayL.map(s => sessRow(s, nx && nx.id === s.id ? 'next' : '')).join('') : `<button class="free" data-act="new" data-d="${tS}">Pas de séance prévue aujourd'hui · ajouter une séance</button>`}</div>`;
+  }
+  const tm = state.timer && byId(state.timer.id);
+  /* les prochaines évaluations, chacune avec son propre compte à rebours */
+  const nextEv = evals().filter(e => e.date >= tS).slice(0, 3);
+  const badges = nextEv.map(e => { const k = diffD(tS, e.date); return `<button class="pill hi" data-act="ep-edit" data-id="${e.id}">Éval. ${esc(epTitle(e))} : ${k === 0 ? "aujourd'hui" : 'J-' + k}</button>`; }).join('')
+    + `<button class="pill" data-act="ep-new" data-kind="eval">${ui('plus', 14, 2)}Évaluation</button>`
+    + (!semSorted().length ? `<button class="pill" data-act="ep-new" data-kind="sem">${ui('plus', 14, 2)}Mes semestrielles</button>` : '');
+  return `<div class="screen appear">
+    <div class="top"><div style="min-width:0"><p class="lead" style="margin:0">${hello}${name ? ',' : ''}</p><h1 class="h1">${name ? esc(name) : 'Revia'}</h1></div>
+      <div class="hd-actions">
+        <button class="avatar" data-act="inbox" aria-label="Boîte de réception">${ui('mail', 19)}${unread ? `<span class="nbadge">${unread > 9 ? '9+' : unread}</span>` : ''}</button>
+        <button class="avatar" data-act="tab" data-v="profile" aria-label="Profil">${name ? esc(initials(name)) : ui('user', 20)}</button>
+      </div></div>
+    <section class="card hero" aria-label="Compte à rebours">
+      <div class="jj ${left <= 0 ? 'sm' : ''} num">${bigJ(left)}</div>
+      <div class="sub">${sub}</div>
+      <div class="date">${esc(cap(fmt(ex, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})))}${semSorted().length ? ' · ' + esc(epTitle(semSorted()[0])) : ''}</div>
+      ${days.length ? `<div class="road" aria-hidden="true">${road}</div><div class="road-l"><span>${esc(fmt(state.planStart, {day: 'numeric', month: 'short'}))}</span><span>Semestrielles</span></div>` : ''}
+      <div class="badges">${badges}</div>
+    </section>
+    ${tm ? `<button class="card tbanner" data-act="open" data-id="${tm.id}"><span class="ico">${subjIcon(tm.s)}</span><span><b style="font-weight:500">${esc(sname(tm.s))}</b><br><small class="hint" data-timer-ph>…</small></span><span class="clk" data-timer>--:--</span></button>` : ''}
+    <div class="stats">
+      <div class="card stat"><span>Heures faites</span><b class="num">${hrs(done)}<small> / ${hrs(obj)} h</small></b></div>
+      <div class="card stat"><span>Aujourd'hui</span><b class="num">${todayL.length ? `${todayL.filter(s => s.done).length}<small> / ${todayL.length}</small>` : '–'}</b></div>
+      <div class="card stat"><span>Série</span><b class="num">${streak()}<small> j</small></b></div>
+    </div>
+    ${todayBlock}
+    ${late.length ? `<button class="card srow" data-act="late"><span class="ico warn">${ui('clock', 20)}</span><span class="t"><b>${plural(late.length, 'séance pas cochée', 'séances pas cochées')}</b><small>Faites quand même ? Coche-les. Sinon, déplace-les.</small></span>${chevron()}</button>` : ''}
+    ${eps.length ? `<h2 class="h2">Évaluations et semestrielles <button data-act="tab" data-v="cal">Calendrier ${ui('chev', 14, 2)}</button></h2><div>${eps.map(epRow).join('')}</div>` : ''}
+    <button class="card srow" data-act="page" data-v="strategy"><span class="ico">${ui('bulb', 20)}</span><span class="t"><b>${esc(tip.t)}</b><small>${esc(tip.d)}</small></span>${chevron()}</button>
+  </div>`;
+}
+
+function planScreen(){
+  const W = weeks(), tS = todayS();
+  if (weekSel == null || !W.includes(weekSel)){ const cur = monday(tS); weekSel = W.includes(cur) ? cur : (tS < W[0] ? W[0] : W[W.length - 1]); }
+  const w = weekSel, days = weekDays(w), list = state.sessions.filter(s => days.includes(s.d)), tot = total(list), dn = doneMin(list);
+  return `<div class="screen appear">
+    <div class="top"><div><h1 class="h1">Planning</h1><p class="lead">Jusqu'aux semestrielles</p></div>
+      <div class="hd-actions"><button class="avatar" data-act="page" data-v="objectives" aria-label="Objectifs">${ui('sliders', 19)}</button><button class="avatar" data-act="new" aria-label="Ajouter une séance">${ui('plus', 20, 2)}</button></div></div>
+    <div class="seg" role="tablist">${W.map(m => `<button class="${m === w ? 'on' : ''}" data-act="week" data-v="${m}" role="tab" aria-selected="${m === w}">${weekShort(m)}</button>`).join('')}</div>
+    <div class="card pad"><div class="brow"><span><b style="font-weight:500">${weekName(w)}</b>&nbsp;<span class="hint">${esc(weekRange(w))}</span></span><b class="num">${hrs(dn)} / ${hrs(tot)} h</b>${bar(tot ? dn / tot : 0)}</div></div>
+    ${days.map(d => { const l = ofDay(d), isT = d === tS, eps = state.epreuves.filter(e => e.date === d);
+      return `<section><div class="dayh"><b>${esc(dLong(d))}${isT ? ' <span class="tag">Aujourd’hui</span>' : ''}${eps.map(epTag).join('')}</b><span>${l.length ? dur(total(l)) : ''}</span></div>
+        ${l.length ? `<div>${l.map(s => sessRow(s)).join('')}</div>` : `<button class="free" data-act="new" data-d="${d}">Libre · ajouter une séance</button>`}</section>`; }).join('')}
+  </div>`;
+}
+
+/* minutes depuis minuit pour une heure "HH:MM" */
+const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+
+function calScreen(){
+  const first = `${calM}-01`, start = monday(first), tS = todayS(), mi = pd(first).getMonth();
+  let cells = '';
+  for (let i = 0; i < 42; i++){
+    const d = addD(start, i), inM = pd(d).getMonth() === mi;
+    if (i >= 35 && !inM) break;
+    const dayE = state.epreuves.filter(e => e.date === d), eps = dayE.filter(e => !isEval(e)).length, evs = dayE.filter(isEval).length, ses = state.sessions.some(s => s.d === d);
+    const dots = [...Array(Math.min(eps, 2)).fill('<i class="e"></i>'), ...Array(Math.min(evs, 2)).fill('<i class="l"></i>'), ...(ses ? ['<i></i>'] : [])].slice(0, 3).join('');
+    cells += `<button class="cday ${inM ? '' : 'out'} ${d === tS ? 'today' : ''} ${eps ? 'ep' : ''} ${d === calSel ? 'sel' : ''}" data-act="cal-day" data-d="${d}" aria-label="${esc(dLong(d))}"><span class="num">${pd(d).getDate()}</span><span class="dots">${dots}</span></button>`;
+  }
+  const dayEps = epSorted().filter(e => e.date === calSel), daySes = ofDay(calSel), sems = semSorted(), evs = evals();
+  return `<div class="screen appear">
+    <div><h1 class="h1">Calendrier</h1><p class="lead">Tes évaluations, tes semestrielles et tes séances</p></div>
+    <div class="card pad">
+      <div class="cal-hd"><button class="iconbtn" data-act="cal-month" data-v="-1" aria-label="Mois précédent">${ui('chevL', 18, 2)}</button><b>${esc(fmt(first, {month: 'long', year: 'numeric'}))}</b><button class="iconbtn" data-act="cal-month" data-v="1" aria-label="Mois suivant">${ui('chev', 18, 2)}</button></div>
+      <div class="cal">${['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => `<span class="wd">${d}</span>`).join('')}${cells}</div>
+    </div>
+    <div class="legend"><span class="pill"><i style="background:var(--warn)"></i>Évaluation</span><span class="pill"><i style="background:var(--cyan)"></i>Semestrielle</span><span class="pill"><i></i>Séances</span></div>
+    <h2 class="h2">${calSel === tS ? "Aujourd'hui" : esc(dLong(calSel))}</h2>
+    ${dayEps.length ? `<div>${dayEps.map(epRow).join('')}</div>` : ''}
+    ${daySes.length ? `<div>${daySes.map(s => sessRow(s)).join('')}</div>` : ''}
+    <div class="row3"><button class="btn primary sm" data-act="ep-new" data-kind="eval" data-d="${calSel}">${ui('plus', 16, 2)}Évaluation</button><button class="btn ghost sm" data-act="ep-new" data-kind="sem" data-d="${calSel}">${ui('plus', 16, 2)}Semestrielle</button><button class="btn ghost sm" data-act="new" data-d="${calSel}">${ui('plus', 16, 2)}Séance</button></div>
+    <h2 class="h2">Mes évaluations <small>${evs.length || ''}</small></h2>
+    ${evs.length ? `<div>${evs.map(epRow).join('')}</div>` : `<p class="hint">Un test ou une évaluation avant les semestrielles (par ex. anglais, allemand) : touche son jour puis « Évaluation ». Chaque matière a sa propre date.</p>`}
+    <h2 class="h2">Mes semestrielles <small>${sems.length || ''}</small></h2>
+    ${sems.length ? `<div>${sems.map(epRow).join('')}</div>` : `<div class="card pad stack"><p class="hint" style="color:var(--text)">Quand tu reçois le planning de tes semestrielles, touche le jour de chaque épreuve puis « Semestrielle ».</p><p class="hint">Le compte à rebours se cale alors tout seul sur la première, et chaque séance te dit combien de jours il reste avant l'épreuve de cette matière.</p></div>`}
+  </div>`;
+}
+
+function progressScreen(){
+  const all = state.sessions, obj = objMin(), dn = doneMin(all), W = weeks(), tS = todayS(), ex = exam();
+  const nDone = all.filter(s => s.done).length, days = planDays();
+  const full = days.filter(d => dayStatus(d) === 'f').length;
+  const cells = [];
+  if (W.length){
+    for (let d = W[0]; d <= addD(W[W.length - 1], 6); d = addD(d, 1)){
+      const l = ofDay(d), n = l.filter(s => s.done).length, r = l.length ? n / l.length : 0;
+      const lv = !l.length ? '' : r === 1 ? 'l3' : r >= .5 ? 'l2' : r > 0 ? 'l1' : '';
+      const isEp = state.epreuves.some(e => e.date === d) || d === ex;
+      cells.push(`<i class="${lv} ${d === tS ? 't' : ''} ${(d < state.planStart || d > ex) && !l.length ? 'o' : ''} ${isEp ? 'ex' : ''}" title="${esc(dShort(d))}">${pd(d).getDate()}</i>`);
+    }
+  }
+  return `<div class="screen appear">
+    <div><h1 class="h1">Progrès</h1><p class="lead">Ce que tu as déjà fait</p></div>
+    <div class="card pad" style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div class="ring">${ringSvg(obj ? dn / obj : 0, 'rg-main')}<div class="in"><b class="num">${hrs(dn)} h</b><span>sur ${hrs(obj)} h d'objectif</span></div></div>
+      <p class="hint">${obj ? Math.round(dn / obj * 100) : 0} % de ton objectif</p>
+    </div>
+    <div class="stats">
+      <div class="card stat"><span>Séances</span><b class="num">${nDone}<small> / ${all.length}</small></b></div>
+      <div class="card stat"><span>Jours complets</span><b class="num">${full}</b></div>
+      <div class="card stat"><span>Série</span><b class="num">${streak()}<small> j</small></b></div>
+    </div>
+    <h2 class="h2">Par matière <button data-act="page" data-v="objectives">Objectifs ${ui('chev', 14, 2)}</button></h2>
+    <div class="card pad stack" style="gap:14px">${state.subjects.map(x => { const a = doneOf(x.k), b = Math.round(x.h * 60);
+      return `<div class="srow-b"><span class="ico sm">${subjIcon(x.k, 17)}</span><span>${esc(x.name)}</span><b class="num">${hrs(a)} / ${hrs(b)} h</b>${bar(b ? a / b : 0)}</div>`; }).join('') || '<p class="hint">Aucune matière.</p>'}</div>
+    <h2 class="h2">Par semaine</h2>
+    <div class="card pad stack" style="gap:14px">${W.map(w => { const dd = weekDays(w), l = state.sessions.filter(s => dd.includes(s.d)), a = doneMin(l), b = total(l);
+      if (!b) return '';
+      return `<button class="brow" data-act="report" data-v="${w}" style="text-align:left"><span>${weekName(w)} <span class="hint">${esc(weekRange(w))}</span></span><b class="num">${hrs(a)} / ${hrs(b)} h</b>${bar(a / b)}</button>`; }).join('')}</div>
+    <h2 class="h2">Régularité</h2>
+    <div class="card pad"><div class="heat">${['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => `<span>${d}</span>`).join('')}${cells.join('')}</div>
+      <p class="hint" style="margin-top:10px">Plus la case est claire, plus tu as fait de séances ce jour-là. Les cases cerclées sont des épreuves.</p></div>
+  </div>`;
+}
+
+function profileScreen(){
+  const name = (state.profile.first || '').trim(), unread = unreadCount();
+  const row = (v, icon, title, small, badge) => `<button class="card srow" data-act="page" data-v="${v}"><span class="ico">${ui(icon, 20)}</span><span class="t"><b>${title}${badge ? '<span class="udot"></span>' : ''}</b>${small ? `<small>${small}</small>` : ''}</span>${chevron()}</button>`;
+  return `<div class="screen appear">
+    <div class="card pad" style="display:flex;align-items:center;gap:14px">
+      <span class="avatar lg">${name ? esc(initials(name)) : ui('user', 26)}</span>
+      <div style="flex:1;min-width:0"><b style="font-weight:500;font-size:18px">${name ? esc(name) : 'Ton profil'}</b><p class="hint">Semestrielles : ${esc(dLong(exam()))}</p></div>
+      <button class="iconbtn" data-act="page" data-v="name" aria-label="Modifier le prénom">${ui('pen', 20)}</button>
+    </div>
+    <h2 class="h2">Mes révisions</h2>
+    <div>${row('objectives', 'sliders', 'Objectifs et matières', `${hrs(objMin())} h au total · ${state.subjects.length} matières`)}
+      ${row('slots', 'slots', 'Mes créneaux libres', `${hrs(state.slots.reduce((a, x) => a + x.m, 0))} h par semaine`)}
+      ${row('dates', 'target', 'Mes dates', `Révisions dès le ${esc(dDay(state.planStart))} · ${plural(evals().length, 'évaluation', 'évaluations')}`)}
+      ${row('strategy', 'bulb', 'Stratégie de révision', 'Rappel de 5 min, répétition espacée…')}</div>
+    <h2 class="h2">Application</h2>
+    <div>${row('inbox', 'mail', 'Boîte de réception', unread ? plural(unread, 'message non lu', 'messages non lus') : 'Bilans de la semaine et compte à rebours', unread)}
+      ${row('skin', 'palette', "Couleur de l'application", esc((SKINS.find(s => s[0] === state.settings.look) || SKINS[0])[1]))}
+      ${row('notif', 'bell', 'Rappels', state.settings.notif ? 'Activés' : 'Désactivés')}
+      ${row('backup', 'save', 'Sauvegarde', 'Copie de sécurité, restaurer')}
+      ${row('install', 'phone', "Installer sur l'écran d'accueil", "Pour l'avoir comme une vraie app")}
+      ${row('reset', 'reset', 'Réinitialiser', 'Planning de départ ou tout effacer')}</div>
+    <p class="foot">Revia · tes données restent sur cet appareil${saveOk ? '' : ' · ⚠ sauvegarde impossible'}</p>
+  </div>`;
+}
+
+/* ============================================================ pages */
+const phead = title => `<div class="phead"><button class="iconbtn" data-act="back" aria-label="Retour">${ui('back', 22, 2)}</button><h1>${title}</h1><span></span></div>`;
+const subjChips = (sel, act, extra = '') => `<div class="chips">${state.subjects.map(x => `<button class="chip ${sel === x.k ? 'on' : ''}" data-act="${act}" data-v="${x.k}">${subjIcon(x.k, 18)}${esc(x.name)}</button>`).join('')}${extra}</div>`;
+const stepper = (val, act) => `<div class="card stepper"><button class="sb" data-act="${act}" data-v="-1" aria-label="Moins">${ui('minus', 20, 2)}</button><span class="sv num">${val}</span><button class="sb" data-act="${act}" data-v="1" aria-label="Plus">${ui('plus', 20, 2)}</button></div>`;
+/* choisir l'heure au quart d'heure : une liste pour l'heure, une pour les minutes (00, 15, 30, 45) */
+function timePick(t){
+  const [h, m] = (t || '12:00').split(':');
+  const mins = ['00', '15', '30', '45']; if (!mins.includes(m)) mins.push(m);
+  return `<div class="tpick"><select class="field" data-in="tp" data-part="h" aria-label="Heure">${Array.from({length: 24}, (_, i) => String(i).padStart(2, '0')).map(x => `<option value="${x}" ${x === h ? 'selected' : ''}>${+x} h</option>`).join('')}</select>
+    <select class="field" data-in="tp" data-part="m" aria-label="Minutes">${mins.sort().map(x => `<option value="${x}" ${x === m ? 'selected' : ''}>${x} min</option>`).join('')}</select></div>`;
+}
+/* les trois façons de placer : heure précise, matin / après-midi / soir, ou sans horaire */
+function timeBlock(f, def, noneTxt = 'À faire quand tu veux dans la journée.'){
+  const mode = f.t ? 'time' : PERIODS[f.p] ? 'period' : 'none';
+  return `<div class="seg"><button class="${mode === 'time' ? 'on' : ''}" data-act="tmode" data-v="time" data-def="${def}">Heure précise</button><button class="${mode === 'period' ? 'on' : ''}" data-act="tmode" data-v="period">Moment</button><button class="${mode === 'none' ? 'on' : ''}" data-act="tmode" data-v="none">Sans horaire</button></div>
+    ${mode === 'time' ? timePick(f.t) : mode === 'period' ? `<div class="chips pers">${Object.entries(PERIODS).map(([k, [l]]) => `<button class="chip ${f.p === k ? 'on' : ''}" data-act="tper" data-v="${k}">${l}</button>`).join('')}</div>` : `<p class="hint">${noneTxt}</p>`}`;
+}
+
+const PAGES = {
+  session(pg){
+    const s = byId(pg.id); if (!s) return phead('Séance') + '<p class="empty">Cette séance a été supprimée.</p>';
+    const prev = previousOf(s), tips = sessionTips(s), tm = state.timer && state.timer.id === s.id, nm = esc(sname(s.s));
+    return `${phead('Séance')}
+      <div class="shead"><span class="ico xl">${subjIcon(s.s, 34)}</span><h2>${nm}</h2><p>${esc(dLong(s.d))} · ${slotLabel(s)} · ${dur(s.m)}</p></div>
+      <div class="card pad stack recall"><b>${ui('bulb', 18)}5 min de rappel</b>
+        <p class="hint" style="color:var(--text)">Avant d'ouvrir tes notes : rappelle-toi ce que tu as fait à la dernière séance de ${nm}. Puis vérifie.</p>
+        ${prev ? `<p class="hint">Dernière séance : ${esc(dLong(prev.d))}${prev.done ? '' : ' (pas cochée)'}</p>
+          ${prev.note ? (pg.reveal ? `<div class="reveal">${esc(prev.note)}</div>` : `<button class="btn ghost sm" data-act="reveal">${ui('eye', 18)}Vérifier avec ma note</button>`) : '<p class="hint">Pas de note sur cette séance-là.</p>'}`
+        : `<p class="hint">C'est ta première séance de ${nm}. Note en bas ce que tu fais : ça servira pour le rappel de la prochaine fois.</p>`}
+      </div>
+      ${tips.map(x => `<p class="hint tip"><span>${ui('info', 16)}</span><span>${esc(x)}</span></p>`).join('')}
+      ${tm ? `<div class="card timer"><div class="ph" data-timer-ph>…</div><div class="clock" data-timer>--:--</div><div class="bar"><i data-timer-bar style="width:0%;animation:none"></i></div>
+          <button class="btn ghost sm" data-act="timer-stop" style="margin:10px auto 0">${ui('stop', 16)}Arrêter</button></div>`
+        : (!s.done ? `<button class="btn ghost" data-act="timer-start" data-id="${s.id}">${ui('play', 18)}Démarrer (5 min de rappel + séance)</button>` : '')}
+      <button class="btn ${s.done ? 'ok' : 'primary'}" data-act="toggle" data-id="${s.id}">${ui('check', 20, 2.4)}${s.done ? 'Séance faite' : 'Marquer comme faite'}</button>
+      <span class="lab">Ce que j'ai révisé</span>
+      <textarea class="field" data-in="note" data-id="${s.id}" placeholder="Ex. : chapitre, exercices faits, ce qui bloque… (c'est toi qui choisis)">${esc(s.note)}</textarea>
+      <p class="hint">Gardé pour le rappel de ta prochaine séance de ${nm}.</p>
+      <button class="btn ghost" data-act="edit" data-id="${s.id}">${ui('pen', 18)}Modifier ou déplacer</button>`;
+  },
+  edit(pg){
+    const f = pg.f;
+    return `${phead(pg.id ? 'Modifier la séance' : 'Nouvelle séance')}
+      <span class="lab">Matière</span>${subjChips(f.s, 'e-subj')}
+      <span class="lab">Jour</span><input class="field" type="date" data-in="e-d" value="${esc(f.d)}">
+      <span class="lab">Quand ?</span>
+      ${timeBlock(f, '12:00')}
+      <span class="lab">Durée</span>${stepper(dur(f.m), 'e-m')}
+      <button class="btn primary" data-act="e-save">${ui('check', 20, 2.4)}${pg.id ? 'Enregistrer' : 'Ajouter la séance'}</button>
+      ${pg.id ? `<button class="btn danger" data-act="e-del">${ui('trash', 18)}${pg.del ? 'Confirmer : supprimer cette séance' : 'Supprimer la séance'}</button>` : ''}`;
+  },
+  late(){
+    const l = overdue();
+    return `${phead('Séances pas cochées')}
+      <p class="hint">Si tu les as faites, coche-les. Sinon, ouvre-les et déplace-les sur un autre jour.</p>
+      <div>${l.length ? l.map(s => sessRow(s, 'late')).join('') : '<p class="empty card">Tout est à jour. Bravo !</p>'}</div>`;
+  },
+  name(pg){
+    return `${phead('Prénom')}
+      <span class="lab">Ton prénom</span><input class="field" data-in="pg-v" value="${esc(pg.v)}" placeholder="Ton prénom" autocomplete="given-name">
+      <p class="hint">Il s'affiche sur l'accueil.</p>
+      <button class="btn primary" data-act="name-save">${ui('check', 20, 2.4)}Enregistrer</button>`;
+  },
+  dates(){
+    const auto = semSorted().length, evs = evals();
+    return `${phead('Mes dates')}
+      <span class="lab">Début des semestrielles</span>
+      ${auto ? `<button class="card srow" data-act="tab" data-v="cal"><span class="ico ep">${ui('target', 20)}</span><span class="t"><b>${esc(dLong(exam()))}</b><small>Calculé avec ta première semestrielle (${esc(epTitle(semSorted()[0]))})</small></span>${chevron()}</button>`
+        : `<input class="field" type="date" data-in="exam" value="${esc(state.exam)}"><p class="hint">Quand tu auras ton planning, entre tes semestrielles dans le Calendrier : cette date se réglera toute seule sur la première.</p>`}
+      <span class="lab">Début des révisions</span><input class="field" type="date" data-in="planStart" value="${esc(state.planStart)}">
+      <p class="hint">Le premier jour de ton planning (la frise de l'accueil commence ici).</p>
+      <h2 class="h2">Mes évaluations <small>${evs.length || ''}</small></h2>
+      ${evs.length ? `<div>${evs.map(epRow).join('')}</div>` : ''}
+      <button class="btn ghost" data-act="ep-new" data-kind="eval">${ui('plus', 18, 2)}Ajouter une évaluation</button>
+      <p class="hint">Chaque évaluation a sa matière et sa date (l'anglais et l'allemand peuvent tomber des jours différents). Elle s'affiche sur l'accueil avec son compte à rebours, et si la matière est réglée sur « seulement avant son évaluation », ses séances sont placées avant.</p>`;
+  },
+  objectives(pg){
+    const obj = objMin(), tS = todayS(), from = tS > state.planStart ? tS : state.planStart;
+    const done = doneMin(state.sessions), remObj = state.subjects.reduce((a, x) => a + Math.max(0, x.h * 60 - doneOf(x.k)), 0);
+    const capLeft = capacity(from, lastDay()), planned = total(state.sessions), nW = planWeeks();
+    return `${phead('Objectifs')}
+      <div class="card pad stack">
+        <div class="kv"><span>Objectif total (${plural(nW, 'semaine', 'semaines')})</span><b class="num" style="font-weight:500">${hrs(obj)} h</b></div>
+        <div class="kv"><span>Soit par semaine</span><b class="num" style="font-weight:500">${hrs(obj / nW)} h</b></div>
+        <div class="kv"><span>Déjà fait</span><b class="num" style="font-weight:400">${hrs(done)} h</b></div>
+        <div class="kv"><span>Dans le planning actuel</span><b class="num" style="font-weight:400">${hrs(planned)} h</b></div>
+        <div class="kv"><span>Créneaux libres d'ici aux semestrielles</span><b class="num" style="font-weight:400">${hrs(capLeft)} h</b></div>
+      </div>
+      ${remObj > capLeft ? `<div class="card pad stack warnbox"><b>Ça ne rentre pas</b><p class="hint">Il te reste ${hrs(remObj)} h à faire mais seulement ${hrs(capLeft)} h de créneaux libres. Baisse un objectif ou ajoute des créneaux.</p></div>` : ''}
+      <h2 class="h2">Heures par matière <small>total · par semaine</small></h2>
+      <div>${state.subjects.map(x => `<div class="card obj"><span class="ico sm">${subjIcon(x.k, 18)}</span><button class="t" data-act="subject" data-v="${x.k}"><b>${esc(x.name)}</b><small>${dur(total(state.sessions.filter(s => s.s === x.k)))} prévues · ${hrs(doneOf(x.k))} h faites</small></button>
+          <div class="mini"><button data-act="obj" data-k="${x.k}" data-v="-0.25" aria-label="Moins un quart d'heure">${ui('minus', 16, 2)}</button><span><b>${dur(Math.round(x.h * 60))}</b><small>${durR(x.h * 60 / nW)}/sem.</small></span><button data-act="obj" data-k="${x.k}" data-v="0.25" aria-label="Plus un quart d'heure">${ui('plus', 16, 2)}</button></div></div>`).join('')}</div>
+      <button class="btn ghost" data-act="subject-new">${ui('plus', 18, 2)}Ajouter une matière</button>
+      <button class="card srow" data-act="page" data-v="slots"><span class="ico">${ui('slots', 20)}</span><span class="t"><b>Mes créneaux libres</b><small>${hrs(state.slots.reduce((a, x) => a + x.m, 0))} h par semaine</small></span>${chevron()}</button>
+      <h2 class="h2">Refaire le planning</h2>
+      <p class="hint">Remplit <b style="font-weight:500">tous</b> tes créneaux libres d'ici aux semestrielles. Les objectifs sont un minimum : s'il te reste du temps en plus, il est partagé entre les matières selon leur objectif. Ensuite : chaque matière revient tous les 2-3 jours, maths et physique sur les longs créneaux, l'anglais et l'allemand avant leur évaluation. Les séances faites, les jours passés et les séances que tu as ajoutées ou modifiées toi-même ne bougent pas ; les autres séances à venir sont remplacées.</p>
+      <button class="btn primary" data-act="regen">${ui('reset', 18)}${pg.c ? 'Confirmer : refaire les séances à venir' : 'Refaire le planning'}</button>`;
+  },
+  subject(pg){
+    const x = subj(pg.k); if (!x) return phead('Matière') + '<p class="empty">Cette matière a été supprimée.</p>';
+    const n = state.sessions.filter(s => s.s === x.k).length;
+    return `${phead(esc(x.name))}
+      <div class="shead"><span class="ico xl">${subjIcon(x.k, 34)}</span></div>
+      <span class="lab">Nom</span><input class="field" data-in="sub-name" data-k="${x.k}" value="${esc(x.name)}">
+      <span class="lab">Logo</span><div class="iconpick">${Object.keys(SUBJ).map(k => `<button class="${x.icon === k ? 'on' : ''}" data-act="sub-icon" data-k="${x.k}" data-v="${k}" aria-label="${k}">${sv(SUBJ[k], 20, 1.5)}</button>`).join('')}</div>
+      <span class="lab">Objectif d'ici aux semestrielles</span>${stepper(dur(Math.round(x.h * 60)), 'sub-h')}
+      <p class="hint">Soit environ ${durR(x.h * 60 / planWeeks())} par semaine sur ${plural(planWeeks(), 'semaine', 'semaines')}. Réglable au quart d'heure.</p>
+      <button class="card srow" data-act="sub-flag" data-k="${x.k}" data-v="long" style="grid-template-columns:1fr auto"><span class="t"><b>Plutôt sur les longs créneaux</b><small>Pour les exercices (comme maths et physique)</small></span><span class="switch ${x.long ? 'on' : ''}"></span></button>
+      <button class="card srow" data-act="sub-flag" data-k="${x.k}" data-v="lang" style="grid-template-columns:1fr auto"><span class="t"><b>Seulement avant son évaluation</b><small>Si ${esc(x.name)} a une évaluation dans le calendrier, toutes ses séances sont placées avant (comme l'anglais et l'allemand, qui n'ont pas de semestrielle). ${(() => { const e = evals().find(e => e.s === x.k && e.date >= todayS()); return e ? `Prochaine : ${esc(dLong(e.date))}.` : 'Aucune évaluation entrée pour l’instant.'; })()}</small></span><span class="switch ${x.lang ? 'on' : ''}"></span></button>
+      <button class="btn danger" data-act="sub-del" data-k="${x.k}">${ui('trash', 18)}${pg.del ? `Confirmer : supprimer avec ses ${n} séances` : 'Supprimer la matière'}</button>`;
+  },
+  slots(){
+    return `${phead('Créneaux libres')}
+      <p class="hint">Tes moments libres de chaque semaine. Si tu en changes un, ton planning est refait quand tu quittes cette page, et tu reçois le plan détaillé de ta semaine dans ta boîte de réception.</p>
+      ${state.slotsDirty ? `<div class="card pad stack" style="border-color:var(--stroke-hi)"><b style="font-weight:500">Créneaux modifiés</b><p class="hint">Ton nouveau planning sera prêt dès que tu reviens en arrière.</p></div>` : ''}
+      ${DAYS.map((nm, d) => { const l = sortSlots(state.slots.filter(x => x.d === d));
+        return `<section><div class="dayh"><b>${nm}</b><span>${l.length ? dur(l.reduce((a, x) => a + x.m, 0)) : ''}</span></div>
+          ${l.map(x => `<button class="card srow" data-act="slot" data-id="${x.id}"><span class="ico sm">${ui('clock', 18)}</span><span class="t"><b>${slotTxt(x)}</b><small>${dur(x.m)}${x.t ? '' : PERIODS[x.p] ? ' dans le ' + (x.p === 'aprem' ? "l'après-midi" : perLabel(x.p).toLowerCase()) : ' quand tu veux'}</small></span>${chevron()}</button>`).join('')}
+          <button class="free" data-act="slot-new" data-v="${d}" style="margin-top:${l.length ? 8 : 0}px">Ajouter un créneau</button></section>`; }).join('')}`;
+  },
+  slot(pg){
+    const f = pg.f;
+    return `${phead(pg.id ? 'Modifier le créneau' : 'Nouveau créneau')}
+      <span class="lab">Jour</span><div class="chips">${DAYS.map((nm, i) => `<button class="chip ${f.d === i ? 'on' : ''}" style="padding:8px 12px" data-act="sl-d" data-v="${i}">${nm}</button>`).join('')}</div>
+      <span class="lab">Quand ?</span>
+      ${timeBlock(f, '18:00', 'Un moment libre dans la journée, sans heure fixe.')}
+      ${f.t ? `<p class="hint">De ${hm(f.t)} à ${hm(addT(f.t, f.m))}.</p>` : ''}
+      <span class="lab">Durée</span>${stepper(dur(f.m), 'sl-m')}
+      <button class="btn primary" data-act="sl-save">${ui('check', 20, 2.4)}Enregistrer</button>
+      ${pg.id ? `<button class="btn danger" data-act="sl-del">${ui('trash', 18)}Supprimer le créneau</button>` : ''}`;
+  },
+  ep(pg){
+    const f = pg.f, ev = f.kind === 'eval', x = subj(f.s);
+    return `${phead(pg.id ? (ev ? "Modifier l'évaluation" : 'Modifier la semestrielle') : (ev ? 'Nouvelle évaluation' : 'Nouvelle semestrielle'))}
+      <span class="lab">C'est…</span>
+      <div class="seg"><button class="${ev ? 'on' : ''}" data-act="ep-kind" data-v="eval">Une évaluation</button><button class="${ev ? '' : 'on'}" data-act="ep-kind" data-v="sem">Une semestrielle</button></div>
+      <p class="hint">${ev ? 'Un test ou une évaluation avant les semestrielles (par ex. anglais, allemand).' : 'Une épreuve des semestrielles de décembre : le compte à rebours se cale sur la première.'}</p>
+      <span class="lab">Matière</span>${subjChips(f.s, 'ep-s', `<button class="chip ${f.s === '' ? 'on' : ''}" data-act="ep-s" data-v="">${sv(SUBJ.star, 18, 1.5)}Autre</button>`)}
+      ${f.s === '' ? `<input class="field" data-in="ep-title" value="${esc(f.title)}" placeholder="Nom de l'épreuve">` : ''}
+      ${ev && x ? `<button class="card srow" data-act="sub-flag" data-k="${x.k}" data-v="lang" style="grid-template-columns:1fr auto"><span class="t"><b>Réviser ${esc(x.name)} seulement avant</b><small>Toutes les séances de ${esc(x.name)} sont placées avant cette évaluation quand le planning est refait</small></span><span class="switch ${x.lang ? 'on' : ''}"></span></button>` : ''}
+      <span class="lab">Jour</span><input class="field" type="date" data-in="ep-d" value="${esc(f.date)}">
+      <span class="lab">Quand ?</span>
+      ${timeBlock(f, '08:00', "Heure pas encore connue : tu pourras l'ajouter plus tard.")}
+      <button class="btn primary" data-act="ep-save">${ui('check', 20, 2.4)}${pg.id ? 'Enregistrer' : ev ? "Ajouter l'évaluation" : 'Ajouter la semestrielle'}</button>
+      ${pg.id ? `<button class="btn danger" data-act="ep-del">${ui('trash', 18)}${pg.del ? 'Confirmer : supprimer' : 'Supprimer'}</button>` : ''}`;
+  },
+  inbox(){
+    const list = messages(), unread = list.filter(m => !m.read).length;
+    return `${phead('Boîte de réception')}
+      ${list.length ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="hint">${unread ? plural(unread, 'non lu', 'non lus') : 'Tout est lu'}</span>${unread ? '<button class="btn ghost sm" data-act="inbox-readall">Tout marquer comme lu</button>' : ''}</div>
+        <div>${list.map(m => { const i = msgInfo(m.id);
+          return `<div class="card srow msg ${m.read ? '' : 'unread'}"><span class="ico">${i.icon}</span>
+            <button class="t" data-act="msg" data-id="${m.id}" style="text-align:left"><b>${m.read ? '' : '<span class="udot"></span>'}${esc(i.title)}</b><small>${esc(i.sub)}</small><small>Reçu le ${esc(dDay(m.date))}</small></button>
+            <button class="iconbtn" data-act="msg-hide" data-id="${m.id}" aria-label="Supprimer le message">${ui('x', 16, 2)}</button></div>`; }).join('')}</div>`
+      : `<div class="card pad stack" style="align-items:center;text-align:center"><span class="ico" style="width:56px;height:56px">${ui('mail', 26)}</span><p class="hint">Aucun message pour l'instant.</p></div>`}
+      <p class="hint">Tu reçois ici le bilan de chaque semaine de révision et un message à J-30, J-25, J-20, J-15, J-10, J-5 et J-1.</p>`;
+  },
+  weekplan(pg){
+    const m = (state.inbox.meta || {})[pg.id] || {}, w = pg.w, W = weeks(), i = W.indexOf(w), tS = todayS();
+    const days = weekDays(w), l = state.sessions.filter(s => days.includes(s.d)), perWeek = state.slots.reduce((a, x) => a + x.m, 0);
+    const bySubj = state.subjects.map(x => ({x, m: total(l.filter(s => s.s === x.k))})).filter(o => o.m).sort((a, b) => b.m - a.m);
+    const from = w > state.planStart ? w : state.planStart, to = addD(w, 6) < lastDay() ? addD(w, 6) : lastDay();
+    const capW = capacity(from > tS ? from : tS, to), planned = total(l.filter(s => !s.done && s.d >= tS));
+    const tips = ['Commence chaque séance par 5 min de rappel sans tes notes, puis vérifie.'];
+    evals().filter(e => e.date >= w && e.date <= addD(w, 6)).forEach(e => tips.push(`Évaluation de ${epTitle(e)} ${fmt(e.date, {weekday: 'long', day: 'numeric', month: 'long'})}${e.s && subj(e.s) && subj(e.s).lang ? ` : toutes les séances de ${epTitle(e)} sont placées avant` : ''}.`));
+    if (diffD(w, exam()) <= 13 && diffD(w, exam()) > 0) tips.push('Semaine avant les semestrielles : d’anciennes semestrielles chronométrées en maths et physique.');
+    if (days.some(d => diffD(d, exam()) <= 3 && diffD(d, exam()) > 0)) tips.push('2–3 derniers jours : plus rien de nouveau, relis tes fiches et refais les exercices ratés.');
+    tips.push('Les créneaux de 30 min servent aux révisions rapides : vocabulaire, définitions, fiches.');
+    const row = s => { const sub = s.t ? `<b>${hm(s.t)}</b><small>${hm(addT(s.t, s.m))}</small>` : PERIODS[s.p] ? `<b>${perLabel(s.p).replace('Après-midi', 'Aprèm')}</b><small>moment</small>` : `<b>${slotLabel(s)}</b><small>libre</small>`;
+      return `<button class="prow ${s.done ? 'done' : ''}" data-act="open" data-id="${s.id}"><span class="pt">${sub}</span><span class="ico sm">${subjIcon(s.s, 17)}</span><span class="t"><b>${esc(sname(s.s))}${s.done ? ' ✓' : ''}</b><small>${dur(s.m)}${s.m <= 30 ? ' · révision rapide' : subj(s.s) && subj(s.s).long ? ' · exercices' : ''}</small></span></button>`; };
+    return `${phead('Ton nouveau planning')}
+      <div class="card pad stack">
+        <p class="hint">Reçu le ${esc(dDay(state.inbox.got[pg.id] || tS))}</p>
+        <p style="margin:0">Salut${state.profile.first ? ' ' + esc(state.profile.first) : ''} !</p>
+        <p style="margin:0">${m.reason === 'slots' ? `Tes créneaux libres ont changé : tu as maintenant <b style="font-weight:500">${hrs(perWeek)} h de libre par semaine</b>. J'ai réorganisé toutes tes séances à venir pour qu'elles tombent dans ces nouveaux horaires, et j'ai utilisé tout ce temps libre.` : m.reason === 'evals' ? `Tes évaluations ont changé${evals().filter(e => e.date >= tS).length ? ' (' + evals().filter(e => e.date >= tS).map(e => `${esc(epTitle(e))} le ${esc(dDay(e.date))}`).join(', ') + ')' : ''}. J'ai réorganisé tes séances à venir : chaque matière qui a une évaluation est révisée avant sa date, et tout ton temps libre est utilisé.` : `Tes objectifs ont changé (${hrs(objMin())} h au total). J'ai réorganisé toutes tes séances à venir en utilisant tout ton temps libre.`}</p>
+        ${m.extra >= 30 ? `<p class="hint">Tu as ${dur(Math.round(m.extra / 15) * 15)} libres de plus que tes objectifs : elles sont réparties entre les matières, surtout celles avec le plus gros objectif.</p>` : ''}
+        <p class="hint">Chaque matière revient tous les 2-3 jours, maths et physique sont sur les longs créneaux. Les séances faites et celles que tu as ajoutées toi-même n'ont pas bougé.</p>
+        ${m.left >= 30 ? `<p class="hint" style="color:var(--warn)">Attention : ${hrs(m.left)} h de tes objectifs n'ont pas trouvé de place. Ajoute un créneau ou baisse un objectif.</p>` : ''}
+      </div>
+      <div class="dnav"><button class="iconbtn" data-act="wp-nav" data-v="-1" ${i <= 0 ? 'disabled style="opacity:.3"' : ''} aria-label="Semaine précédente">${ui('chevL', 18, 2)}</button>
+        <div style="text-align:center"><b>${weekName(w)}</b><p class="hint">${esc(weekRange(w))}</p></div>
+        <button class="iconbtn" data-act="wp-nav" data-v="1" ${i >= W.length - 1 ? 'disabled style="opacity:.3"' : ''} aria-label="Semaine suivante">${ui('chev', 18, 2)}</button></div>
+      <div class="stats">
+        <div class="card stat"><span>Séances</span><b class="num">${l.length}</b></div>
+        <div class="card stat"><span>Révisions</span><b class="num">${hrs(total(l))}<small> h</small></b></div>
+        <div class="card stat"><span>Libre restant</span><b class="num">${hrs(Math.max(0, capW - planned))}<small> h</small></b></div>
+      </div>
+      ${bySubj.length ? `<h2 class="h2">Cette semaine par matière</h2><div class="chips">${bySubj.map(o => `<span class="chip">${subjIcon(o.x.k, 18)}${esc(o.x.name)} · ${dur(o.m)}</span>`).join('')}</div>` : ''}
+      <h2 class="h2">Jour par jour</h2>
+      ${days.map(d => { const ds = ofDay(d), eps = state.epreuves.filter(e => e.date === d), sl = sortSlots(state.slots.filter(x => x.d === wday(d)));
+        return `<section><div class="dayh"><b>${esc(dLong(d))}${d === tS ? ' <span class="tag">Aujourd’hui</span>' : ''}${eps.map(epTag).join('')}</b><span>${ds.length ? dur(total(ds)) : ''}</span></div>
+          ${ds.length ? `<div class="card plist">${ds.map(row).join('')}</div>` : `<p class="free">${sl.length ? 'Pas de séance ce jour-là' : 'Pas de créneau libre ce jour-là'}</p>`}
+          ${sl.length ? `<p class="hint" style="margin:6px 2px 0">Libre : ${sl.map(x => x.t ? `${hm(x.t)}–${hm(addT(x.t, x.m))}` : PERIODS[x.p] ? `${perLabel(x.p).toLowerCase()} (${dur(x.m)})` : `${dur(x.m)} sans horaire`).join(' · ')}</p>` : ''}</section>`; }).join('')}
+      <h2 class="h2">Pour cette semaine</h2>
+      <div class="card pad stack">${tips.map(t => `<p class="hint tip" style="color:var(--text)"><span>${ui('bulb', 16)}</span><span>${esc(t)}</span></p>`).join('')}</div>
+      <button class="btn primary" data-act="wp-open" data-v="${w}">${ui('plan', 20)}Voir dans le Planning</button>`;
+  },
+  hello(){
+    return `${phead('Bienvenue')}
+      <div class="card pad stack" style="gap:12px">
+        <p style="margin:0">Salut${state.profile.first ? ' ' + esc(state.profile.first) : ''} ! Ici, tu reçois :</p>
+        <div class="feat"><span class="ico sm">${ui('report', 17)}</span><span>chaque lundi, le <b style="font-weight:500">bilan de ta semaine</b> : heures faites par matière, séances ratées, comparaison avec la semaine d'avant ;</span></div>
+        <div class="feat"><span class="ico sm">${ui('hourglass', 17)}</span><span>un message à <b style="font-weight:500">J-30, J-25, J-20, J-15, J-10, J-5 et J-1</b> avant les semestrielles.</span></div>
+        <p class="hint">Les dates suivent ton calendrier : si tu entres tes épreuves, le compte à rebours se cale sur la première.</p>
+      </div>`;
+  },
+  report(pg){
+    const w = pg.w, dd = weekDays(w), l = state.sessions.filter(s => dd.includes(s.d)), pl = total(l), dn = doneMin(l);
+    const pw = addD(w, -7), prevL = state.sessions.filter(s => s.d >= pw && s.d < w), pdn = doneMin(prevL);
+    const nDone = l.filter(s => s.done).length, missed = l.filter(s => !s.done && s.d < todayS());
+    const bySubj = state.subjects.map(x => ({x, l: l.filter(s => s.s === x.k)})).filter(o => o.l.length);
+    const dayMins = dd.map(d => ({d, m: doneMin(l.filter(s => s.d === d))})).sort((a, b) => b.m - a.m);
+    const pct = pl ? Math.round(dn / pl * 100) : 0, diff = dn - pdn;
+    const msg = pct >= 100 ? 'Semaine parfaite : tout est fait. Bravo !' : pct >= 80 ? 'Très bonne semaine, continue comme ça.' : pct >= 50 ? 'Une bonne partie est faite. Regarde ce qui a coincé pour la semaine suivante.' : 'Semaine difficile. Pas grave : déplace les séances ratées et repars sur la suivante.';
+    return `${phead('Bilan de la semaine')}
+      <div class="card pad" style="text-align:center"><p class="hint">${weekName(w)} · ${esc(weekRange(w))}</p>
+        <div class="ring" style="margin-top:8px">${ringSvg(pl ? dn / pl : 0, 'rg-rep')}<div class="in"><b class="num">${hrs(dn)} h</b><span>sur ${hrs(pl)} h prévues</span></div></div>
+        <p style="margin:8px 0 0">${esc(msg)}</p></div>
+      <div class="stats">
+        <div class="card stat"><span>Séances</span><b class="num">${nDone}<small> / ${l.length}</small></b></div>
+        <div class="card stat"><span>Réussite</span><b class="num">${pct}<small> %</small></b></div>
+        <div class="card stat"><span>vs avant</span><b class="num" style="color:${!prevL.length ? 'var(--muted)' : diff >= 0 ? 'var(--up)' : 'var(--down)'}">${prevL.length ? (diff >= 0 ? '+' : '−') + hrs(Math.abs(diff)) : '–'}<small>${prevL.length ? ' h' : ''}</small></b></div>
+      </div>
+      <h2 class="h2">Heures par matière</h2>
+      <div class="card pad stack" style="gap:14px">${bySubj.map(o => { const a = doneMin(o.l), b = total(o.l);
+        return `<div class="srow-b"><span class="ico sm">${subjIcon(o.x.k, 17)}</span><span>${esc(o.x.name)}</span><b class="num">${hrs(a)} / ${hrs(b)} h</b>${bar(b ? a / b : 0)}</div>`; }).join('')}</div>
+      <div class="card pad stack">
+        <div class="kv"><span>Meilleur jour</span><b style="font-weight:400">${dayMins[0] && dayMins[0].m ? `${esc(dShort(dayMins[0].d))} · ${dur(dayMins[0].m)}` : '–'}</b></div>
+        <div class="kv"><span>Total depuis le début</span><b class="num" style="font-weight:400">${hrs(doneMin(state.sessions.filter(s => s.d <= addD(w, 6))))} / ${hrs(objMin())} h</b></div>
+      </div>
+      ${missed.length ? `<h2 class="h2">Pas faites <small>${missed.length}</small></h2><div>${missed.map(s => sessRow(s, 'late')).join('')}</div>` : ''}`;
+  },
+  milestone(pg){
+    const k = pg.n, ex = pg.ex, done = doneMin(state.sessions), obj = objMin();
+    const rest = state.subjects.map(x => ({x, r: Math.max(0, x.h * 60 - doneOf(x.k))})).filter(o => o.r > 0).sort((a, b) => b.r - a.r).slice(0, 4);
+    const eps = epSorted().filter(e => e.date >= todayS()).slice(0, 5), tip = phaseTip();
+    const left = state.sessions.filter(s => !s.done && s.d >= todayS() && s.d < exam());
+    return `${phead(k === 0 ? 'Jour J' : `J-${k}`)}
+      <div class="card hero"><div class="jj ${k === 0 ? 'sm' : ''}">${bigJ(k)}</div><div class="sub">${k === 0 ? 'Les semestrielles commencent aujourd’hui' : k === 1 ? 'Les semestrielles commencent demain' : `Plus que ${k} jours avant les semestrielles`}</div><div class="date">${esc(cap(fmt(ex, {weekday: 'long', day: 'numeric', month: 'long'})))}</div></div>
+      <div class="stats">
+        <div class="card stat"><span>Heures faites</span><b class="num">${hrs(done)}<small> / ${hrs(obj)}</small></b></div>
+        <div class="card stat"><span>Séances à venir</span><b class="num">${left.length}</b></div>
+        <div class="card stat"><span>Heures à venir</span><b class="num">${hrs(total(left))}<small> h</small></b></div>
+      </div>
+      ${rest.length && k > 0 ? `<h2 class="h2">Ce qu'il reste le plus</h2><div class="card pad stack" style="gap:14px">${rest.map(o => `<div class="srow-b"><span class="ico sm">${subjIcon(o.x.k, 17)}</span><span>${esc(o.x.name)}</span><b class="num">encore ${hrs(o.r)} h</b>${bar(1 - o.r / (o.x.h * 60 || 1))}</div>`).join('')}</div>` : ''}
+      ${eps.length ? `<h2 class="h2">Tes épreuves</h2><div>${eps.map(epRow).join('')}</div>` : ''}
+      <div class="card pad stack"><b style="font-weight:500">${esc(tip.t)}</b><p class="hint">${esc(tip.d)}</p></div>`;
+  },
+  strategy(){
+    return `${phead('Stratégie de révision')}
+      <div class="card pad"><ol class="list">
+        <li><b>5 min de rappel</b> au début de chaque séance : sans tes notes, rappelle-toi la séance précédente dans la même matière, puis vérifie.</li>
+        <li><b>Répétition espacée</b> : chaque matière revient tous les 2 à 3 jours, jusqu'au bout.</li>
+        <li><b>Alternance</b> : plusieurs matières par jour plutôt qu'un seul gros bloc.</li>
+        <li><b>Créneaux adaptés</b> : maths et physique sur les longs créneaux ; révisions rapides (vocabulaire, définitions, fiches) sur les 30 min.</li>
+        <li><b>Dernière semaine</b> : entraînement en conditions réelles, avec d'anciennes semestrielles chronométrées en maths et physique.</li>
+        <li><b>2–3 derniers jours</b> : plus rien de nouveau. Relis tes fiches et refais les exercices ratés.</li>
+      </ol></div>
+      <p class="hint">L'app ne te dit pas quoi réviser : c'est toi qui choisis le contenu de chaque séance.</p>`;
+  },
+  skin(){
+    const sk = SKIN_BG[state.settings.look] ? state.settings.look : 'clair';
+    return `${phead("Couleur de l'application")}
+      <div class="skins">${SKINS.map(([k, l, g]) => `<button class="card skin ${sk === k ? 'on' : ''}" data-act="skin" data-v="${k}"><span class="sw" style="background:${g}"></span><span style="flex:1">${l}</span>${sk === k ? `<span style="color:var(--accent-2)">${ui('check', 18, 2.4)}</span>` : ''}</button>`).join('')}</div>
+      <p class="hint">Clair, crème et gris sont des modes clairs. Sombre est le mode nuit.</p>`;
+  },
+  notif(){
+    const sup = 'Notification' in window, perm = sup ? Notification.permission : 'unsupported';
+    return `${phead('Rappels')}
+      <button class="card srow" data-act="notif-toggle"><span class="ico">${ui('bell', 20)}</span><span class="t"><b>Notifications</b><small>${!sup ? "Pas disponible ici. Installe d'abord l'app sur l'écran d'accueil." : perm === 'denied' ? 'Refusées dans les réglages du téléphone.' : 'Début des séances, bilans, J-30 … J-1'}</small></span><span class="switch ${state.settings.notif && perm === 'granted' ? 'on' : ''}"></span></button>
+      <p class="hint">Une app web ne peut envoyer ces notifications que si elle est ouverte ou encore en arrière-plan. Pour des rappels sûrs à 100 %, même app fermée, ajoute ton planning à l'app Calendrier :</p>
+      <button class="btn primary" data-act="ics">${ui('cal', 20)}Ajouter le planning à mon calendrier</button>
+      <p class="hint">Ça crée un fichier .ics avec toutes les séances qui restent (et tes épreuves), chacune avec une alerte. Sur iPhone : ouvre-le, puis « Tout ajouter ».</p>`;
+  },
+  backup(pg){
+    return `${phead('Sauvegarde')}
+      <div class="card pad stack"><b style="font-weight:500;display:flex;gap:8px;align-items:center"><span style="color:var(--up);display:flex">${ui('check', 18, 2.4)}</span>Enregistré automatiquement</b>
+        <p class="hint">Chaque changement est gardé tout de suite sur cet appareil, même quand tu fermes l'app. Si tu supprimes l'app de l'écran d'accueil, les données partent avec elle : fais une copie de temps en temps.</p></div>
+      <button class="btn ghost" data-act="bk-export">${ui('download', 18)}Télécharger une copie</button>
+      <span class="lab">Restaurer une copie (.json)</span><input class="field" type="file" accept=".json,application/json" data-in="bk-file">
+      ${pg.err ? `<p class="err">${esc(pg.err)}</p>` : ''}
+      ${pg.imp ? `<button class="btn danger" data-act="bk-import">Remplacer mes données par cette copie (${pg.imp.sessions.length} séances)</button>` : ''}`;
+  },
+  install(){
+    const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    return `${phead("Installer l'app")}
+      ${standalone ? '<div class="card pad"><b style="font-weight:500">C\'est déjà fait ✓</b><p class="hint">Tu utilises Revia comme une vraie app.</p></div>' : ''}
+      ${installEvt ? `<button class="btn primary" data-act="install-go">${ui('download', 18)}Installer maintenant</button>` : ''}
+      <h2 class="h2">Sur iPhone</h2>
+      <div class="card pad"><ol class="list"><li>Ouvre l'adresse de l'app dans <b>Safari</b>.</li><li>Touche <b>Partager</b> (carré avec une flèche).</li><li><b>Sur l'écran d'accueil</b> → <b>Ajouter</b>.</li></ol></div>
+      <h2 class="h2">Sur Android</h2>
+      <div class="card pad"><ol class="list"><li>Ouvre l'adresse dans <b>Chrome</b>.</li><li>Menu <b>⋮</b> → <b>Installer l'application</b>.</li></ol></div>
+      <p class="hint">Ensuite l'app s'ouvre en plein écran et marche même sans internet.</p>`;
+  },
+  reset(pg){
+    return `${phead('Réinitialiser')}
+      <div class="card pad stack"><b style="font-weight:500">Remettre le planning de départ</b>
+        <p class="hint">Remet les 4 semaines du début. Les séances cochées, tes notes et tes changements de séances sont perdus. Ton prénom, tes dates, tes épreuves et tes objectifs restent.</p>
+        <button class="btn danger" data-act="reset-plan">${pg.c1 ? 'Confirmer : remettre le planning' : 'Remettre le planning de départ'}</button></div>
+      <div class="card pad stack"><b style="font-weight:500">Tout effacer</b>
+        <p class="hint">Efface toutes les données de l'app sur cet appareil. Pense à télécharger une copie avant.</p>
+        <button class="btn danger" data-act="wipe">${pg.c2 ? 'Confirmer : tout effacer' : 'Tout effacer'}</button></div>`;
+  },
+  welcome(pg){
+    const f = (i, t) => `<div class="feat"><span class="ico sm">${ui(i, 17)}</span><span>${t}</span></div>`;
+    return `<div style="text-align:center;padding:36px 0 6px"><div class="jj" style="font-size:56px;letter-spacing:-.03em">Revia</div><p class="lead">Ton planning de révision pour les semestrielles</p></div>
+      <div class="card pad stack" style="gap:12px">
+        ${f('plan', 'Tes séances jusqu’aux semestrielles, jour par jour')}
+        ${f('check', 'Coche chaque séance quand elle est faite')}
+        ${f('bulb', '5 min de rappel au début de chaque séance')}
+        ${f('cal', 'Tes épreuves dans le calendrier, avec compte à rebours')}
+        ${f('mail', 'Un bilan chaque semaine dans ta boîte de réception')}
+      </div>
+      <span class="lab">Comment tu t'appelles ?</span><input class="field" data-in="pg-v" value="${esc(pg.v)}" placeholder="Ton prénom" autocomplete="given-name">
+      <button class="btn primary" data-act="welcome-go">C'est parti</button>`;
+  }
+};
+
+/* ============================================================ rendu */
+function render(){
+  applySkin();
+  syncInbox();
+  const app = document.getElementById('app');
+  app.innerHTML = tab === 'home' ? homeScreen() : tab === 'plan' ? planScreen() : tab === 'cal' ? calScreen() : tab === 'progress' ? progressScreen() : profileScreen();
+  /* l'animation d'apparition seulement quand on change d'onglet, pas à chaque coche */
+  if (!animNext){ app.firstElementChild.classList.remove('appear'); app.querySelectorAll('.bar i').forEach(i => i.style.animation = 'none'); }
+  animNext = false;
+  renderTabs();
+  tick();
+}
+function renderPages(isNew){
+  const host = document.getElementById('pages');
+  while (host.children.length > stack.length) host.lastElementChild.remove();
+  stack.forEach((p, i) => {
+    let el = host.children[i];
+    if (!el){ el = document.createElement('div'); el.className = 'page'; el.innerHTML = '<div class="screen"></div>'; host.appendChild(el); }
+    if (i === stack.length - 1 || isNew){
+      el.firstElementChild.innerHTML = PAGES[p.kind](p);
+      if (!(isNew && i === stack.length - 1)) el.querySelectorAll('.bar i').forEach(b => b.style.animation = 'none');
+    }
+  });
+  document.body.classList.toggle('paged', stack.length > 0);
+  tick();
+}
+const top_ = () => stack[stack.length - 1];
+function refresh(){ save(); render(); if (stack.length) renderPages(); scheduleNotifs(); }
+
+/* pages et historique : le bouton/geste retour du téléphone ferme la page du dessus */
+let ignorePop = 0;
+function push(p, hist = true){ p.hist = hist; stack.push(p); if (hist) history.pushState({p: stack.length}, ''); renderPages(true); }
+function pop(n = 1){
+  const removed = stack.splice(Math.max(0, stack.length - n), n), h = removed.filter(p => p.hist).length;
+  if (h){ ignorePop++; history.go(-h); }
+  afterClose(removed);
+  renderPages(); render();
+}
+addEventListener('popstate', () => {
+  if (ignorePop){ ignorePop--; return; }
+  if (stack.length && stack[stack.length - 1].hist){ afterClose([stack.pop()]); renderPages(); render(); }
+});
+/* en quittant la page des créneaux après un changement : planning refait + plan détaillé dans la boîte de réception */
+function afterClose(removed){
+  if (!state.slotsDirty || !removed.some(p => p.kind === 'slots')) return;
+  const n = replan('slots'); save(); scheduleNotifs();
+  toast(n ? 'Planning refait · le détail est dans ta boîte de réception' : 'Plus de créneaux libres d’ici aux semestrielles');
+}
+
+/* ============================================================ barre d'onglets "verre liquide" (reprise de NEXORA) */
+const TABS = [['home', 'Accueil', 'home'], ['plan', 'Planning', 'plan'], ['cal', 'Calendrier', 'cal'], ['progress', 'Progrès', 'chart'], ['profile', 'Profil', 'user']];
+function renderTabs(){
+  const tb = document.getElementById('tabs');
+  if (!tb.dataset.built){
+    tb.innerHTML = `<span class="tab-pill" aria-hidden="true"><span class="tab-pill-in"><span class="tab-pill-body"></span><span class="tab-pill-lens"><span class="lens-row">${TABS.map(([k, l, i]) => `<span class="lens-tab">${ui(i, 22)}<span>${l}</span></span>`).join('')}</span></span><span class="tab-pill-glare"></span></span></span>` +
+      TABS.map(([k, l, i]) => `<button class="tab" data-act="tab" data-v="${k}">${ui(i, 22)}<span>${l}</span></button>`).join('');
+    tb.dataset.built = '1'; tb.dataset.first = '1';
+  }
+  tb.querySelectorAll('.tab').forEach(b => { const on = b.dataset.v === tab; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  placePill();
+}
+/* la loupe : une copie de la barre, décalée pour que la bulle montre exactement ce qu'il y a dessous */
+function setPill(pill, x, w){
+  pill.style.width = w + 'px'; pill.style.transform = `translateX(${x}px)`;
+  const row = pill.querySelector('.lens-row'), tb = document.getElementById('tabs');
+  const W = tb.clientWidth, H = tb.clientHeight, ph = pill.offsetHeight || H - 12;
+  pill.style.setProperty('--gx', (w * .08).toFixed(1) + 'px'); pill.style.setProperty('--gy', (ph * .21).toFixed(1) + 'px');
+  row.style.width = W + 'px'; row.style.height = H + 'px';
+  row.style.top = Math.round(ph / 2 - H / 2) + 'px';
+  row.style.transform = `translateX(${Math.round(-x)}px)`;
+}
+function placePill(force){
+  const tb = document.getElementById('tabs'), pill = tb.querySelector('.tab-pill'), on = tb.querySelector('.tab.on');
+  if (!pill || !on || !on.offsetWidth) return;
+  const x = on.offsetLeft, w = on.offsetWidth, instant = force || tb.dataset.first === '1' || RM();
+  const moved = pill.dataset.x !== undefined && +pill.dataset.x !== x;
+  if (instant) pill.classList.add('instant');
+  setPill(pill, x, w);
+  if (instant){ void pill.offsetWidth; pill.classList.remove('instant'); tb.dataset.first = ''; }
+  else if (moved){ pill.classList.remove('moving'); void pill.offsetWidth; pill.classList.add('moving'); clearTimeout(placePill.tm); placePill.tm = setTimeout(() => pill.classList.remove('moving'), 560); }
+  pill.dataset.x = x;
+}
+addEventListener('resize', () => placePill(true));
+function goTab(v){
+  if (stack.length) pop(stack.length);
+  if (v === tab){ scrollTo({top: 0, behavior: 'smooth'}); return; }
+  tab = v; animNext = true; render(); scrollTo(0, 0);
+}
+/* attraper la bulle : elle gonfle, suit le doigt, et en la lâchant elle se pose sur l'onglet le plus proche */
+(() => {
+  const bar = document.getElementById('tabs');
+  let drag = null, suppress = 0;
+  const tabsEls = () => [...bar.querySelectorAll('.tab')];
+  bar.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    const pill = bar.querySelector('.tab-pill'), on = bar.querySelector('.tab.on');
+    if (!pill || !on) return;
+    const br = bar.getBoundingClientRect(), x0 = pill.dataset.x !== undefined ? +pill.dataset.x : on.offsetLeft, w = on.offsetWidth, px = e.clientX - br.left;
+    if (px < x0 - 6 || px > x0 + w + 6) return;
+    drag = {id: e.pointerId, sx: e.clientX, x0, w, x: x0, active: false};
+    try { bar.setPointerCapture(e.pointerId); } catch (_){}
+  });
+  bar.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const pill = bar.querySelector('.tab-pill'), dx = e.clientX - drag.sx;
+    if (!drag.active){
+      if (Math.abs(dx) < 4) return;
+      drag.active = true; pill.classList.remove('moving'); pill.classList.add('dragging', 'instant'); bar.classList.add('grabbing'); buzz(8);
+    }
+    const T = tabsEls(), min = T[0].offsetLeft, max = T[T.length - 1].offsetLeft;
+    drag.x = Math.max(min, Math.min(max, drag.x0 + dx));
+    setPill(pill, drag.x, drag.w);
+    const c = drag.x + drag.w / 2;
+    T.forEach(b => b.classList.toggle('drag-over', Math.abs(b.offsetLeft + b.offsetWidth / 2 - c) < b.offsetWidth / 2));
+  });
+  const end = e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag; drag = null;
+    if (!d.active) return;
+    suppress = Date.now();
+    const pill = bar.querySelector('.tab-pill'), T = tabsEls();
+    bar.classList.remove('grabbing'); pill.classList.remove('dragging'); void pill.offsetWidth; pill.classList.remove('instant');
+    T.forEach(b => b.classList.remove('drag-over'));
+    const c = d.x + d.w / 2, target = T.reduce((best, b) => Math.abs(b.offsetLeft + b.offsetWidth / 2 - c) < Math.abs(best.offsetLeft + best.offsetWidth / 2 - c) ? b : best, T[0]);
+    pill.dataset.x = d.x;
+    if (target.dataset.v !== tab){ buzz(10); goTab(target.dataset.v); } else placePill();
+  };
+  bar.addEventListener('pointerup', end);
+  bar.addEventListener('pointercancel', end);
+  /* un glissé ne doit pas compter aussi comme un toucher sur l'onglet où il finit */
+  document.addEventListener('click', e => { if (Date.now() - suppress < 350 && e.target.closest && e.target.closest('#tabs')){ e.stopPropagation(); e.preventDefault(); } }, true);
+})();
+
+/* ============================================================ glisser depuis le bord gauche pour revenir (comme sur iPhone) */
+(() => {
+  const EDGE = 28, DUR = 260, EASE = 'cubic-bezier(.2,.8,.2,1)';
+  let s = null;
+  function start(){
+    const pages = document.getElementById('pages').children, n = pages.length, page = pages[n - 1];
+    s.page = page; s.under = n > 1 ? pages[n - 2] : document.getElementById('app'); s.W = innerWidth;
+    page.style.animation = 'none'; page.style.transition = 'none'; page.style.boxShadow = '-10px 0 28px rgba(0,0,0,.4)'; page.style.zIndex = 32 + n;
+    s.shade = document.createElement('div');
+    s.shade.style.cssText = `position:fixed;inset:0;z-index:${30 + n};background:#000;opacity:.35;pointer-events:none`;
+    document.body.appendChild(s.shade);
+    s.under.style.transition = 'none';
+  }
+  function move(dx){
+    const k = dx / s.W;
+    s.page.style.transform = `translateX(${dx}px)`;
+    s.shade.style.opacity = .35 * (1 - k);
+    s.under.style.transform = `translateX(${-.3 * s.W * (1 - k)}px)`;
+  }
+  function finish(back){
+    const d = s; s = null;
+    const tr = `transform ${DUR}ms ${EASE}`;
+    d.page.style.transition = tr; d.under.style.transition = tr; d.shade.style.transition = `opacity ${DUR}ms ${EASE}`;
+    d.page.style.transform = back ? `translateX(${d.W}px)` : '';
+    d.under.style.transform = back ? '' : `translateX(${-.3 * d.W}px)`;
+    d.shade.style.opacity = back ? 0 : .35;
+    setTimeout(() => {
+      d.page.style.transition = d.page.style.transform = d.page.style.boxShadow = d.page.style.zIndex = '';
+      d.under.style.transition = d.under.style.transform = '';
+      d.shade.remove();
+      if (back) pop();
+    }, DUR);
+  }
+  document.addEventListener('touchstart', e => {
+    if (s || !stack.length || !top_().hist || e.touches.length > 1) return;
+    const tc = e.touches[0];
+    if (tc.clientX > EDGE) return;
+    s = {x0: tc.clientX, y0: tc.clientY, on: false, dx: 0, v: 0, lx: tc.clientX, lt: performance.now()};
+  }, {passive: true});
+  document.addEventListener('touchmove', e => {
+    if (!s) return;
+    const tc = e.touches[0], dx = tc.clientX - s.x0, dy = tc.clientY - s.y0;
+    if (!s.on){
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dy) > Math.abs(dx) || dx < 0){ s = null; return; }
+      s.on = true; start();
+    }
+    e.preventDefault();
+    const now = performance.now();
+    s.v = (tc.clientX - s.lx) / Math.max(1, now - s.lt); s.lx = tc.clientX; s.lt = now;
+    s.dx = Math.max(0, dx);
+    move(s.dx);
+  }, {passive: false});
+  const end = () => {
+    if (!s) return;
+    if (!s.on){ s = null; return; }
+    const flick = s.v > .45 && s.dx > 20 && performance.now() - s.lt < 100;
+    finish(s.dx > s.W * .35 || flick);
+  };
+  document.addEventListener('touchend', end);
+  document.addEventListener('touchcancel', end);
+})();
+
+/* ============================================================ minuteur de séance */
+function tick(){
+  const tm = state.timer; if (!tm) return;
+  const s = byId(tm.id); if (!s){ state.timer = null; save(); return; }
+  const el = Math.floor((Date.now() - tm.start) / 1000), totalS = s.m * 60, rec = Math.min(300, totalS);
+  let ph, txt; const p = Math.min(1, el / totalS);
+  if (el < rec){ ph = 'Rappel sans tes notes'; txt = mmss(rec - el); }
+  else if (el < totalS){ ph = 'Séance · temps restant'; txt = mmss(totalS - el); }
+  else { ph = 'Séance terminée'; txt = '0:00'; }
+  document.querySelectorAll('[data-timer]').forEach(e => e.textContent = txt);
+  document.querySelectorAll('[data-timer-ph]').forEach(e => e.textContent = ph);
+  document.querySelectorAll('[data-timer-bar]').forEach(e => e.style.width = (p * 100) + '%');
+  if (el >= rec && !tm.recallDone){ tm.recallDone = true; save(); buzz(200); }
+  if (el >= totalS && !tm.ended){ tm.ended = true; save(); buzz([200, 100, 200]); notify(`${sname(s.s)} : séance terminée`, 'Pense à la cocher et à noter ce que tu as fait.'); toast('Séance terminée !'); }
+}
+const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+let lastDayS = todayS();
+setInterval(() => { tick(); if (todayS() !== lastDayS){ lastDayS = todayS(); render(); scheduleNotifs(); } }, 1000);
+
+/* ============================================================ notifications */
+let notifTimers = [];
+function notify(title, body){
+  if (!('Notification' in window) || Notification.permission !== 'granted' || !state.settings.notif) return;
+  const opt = {body, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: title};
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.ready.then(r => r.showNotification(title, opt)).catch(() => {});
+  else try { new Notification(title, opt); } catch (e){}
+}
+function scheduleNotifs(){
+  notifTimers.forEach(clearTimeout); notifTimers = [];
+  if (!state.settings.notif || !('Notification' in window) || Notification.permission !== 'granted') return;
+  const now = Date.now(), tS = todayS();
+  [tS, addD(tS, 1)].forEach(d => ofDay(d).forEach(s => {
+    if (s.done || !s.t) return;
+    const [h, m] = s.t.split(':').map(Number), dt = pd(d); dt.setHours(h, m, 0, 0);
+    const when = dt.getTime() - now;
+    if (when > 0 && when < 864e5 * 2) notifTimers.push(setTimeout(() => notify(`${sname(s.s)} · ${hm(s.t)}`, `C'est l'heure de ta séance (${dur(s.m)}). Commence par 5 min de rappel.`), when));
+  }));
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden){ render(); if (stack.length) renderPages(); scheduleNotifs(); } });
+
+/* ============================================================ fichiers : calendrier et sauvegarde */
+async function saveFile(name, text, type){
+  const blob = new Blob([text], {type}), file = new File([blob], name, {type});
+  if (navigator.canShare && navigator.canShare({files: [file]}) && /iPhone|iPad|Android/i.test(navigator.userAgent)){
+    try { await navigator.share({files: [file]}); return true; } catch (e){ if (e && e.name === 'AbortError') return false; }
+  }
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 4000);
+  return true;
+}
+function icsText(){
+  const dd = s => s.replace(/-/g, '');
+  const dt = (s, t) => `${dd(s)}T${t.replace(':', '')}00`;
+  const escI = s => String(s).replace(/[\\;,]/g, c => '\\' + c).replace(/\n/g, '\\n');
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//REVIA//Planning//FR', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:Révisions semestrielles'];
+  const tS = todayS(), days = [...new Set(state.sessions.filter(s => s.d >= tS && !s.done).map(s => s.d))].sort();
+  days.forEach(d => {
+    const l = ofDay(d).filter(s => !s.done);
+    l.filter(s => s.t).forEach(s => {
+      const e = addT(s.t, s.m);
+      L.push('BEGIN:VEVENT', `UID:${s.id}@revia`, `DTSTAMP:${stamp}`, `DTSTART:${dt(d, s.t)}`, `DTEND:${dt(e < s.t ? addD(d, 1) : d, e)}`,
+        `SUMMARY:${escI('Révision · ' + sname(s.s))}`, `DESCRIPTION:${escI('Commence par 5 min de rappel sans tes notes.')}`,
+        'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${escI(sname(s.s))}`, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT');
+    });
+    const free = l.filter(s => !s.t);
+    if (free.length) L.push('BEGIN:VEVENT', `UID:blocs-${dd(d)}@revia`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${dd(d)}`, `DTEND;VALUE=DATE:${dd(addD(d, 1))}`,
+      `SUMMARY:${escI('Révisions (' + dur(total(free)) + ') : ' + free.map(s => sname(s.s) + (PERIODS[s.p] ? ' (' + perLabel(s.p).toLowerCase() + ')' : '')).join(', '))}`,
+      'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${escI('Révisions du jour')}`, 'TRIGGER:PT9H', 'END:VALARM', 'END:VEVENT');
+  });
+  epSorted().filter(e => e.date >= tS).forEach(e => {
+    const title = escI(epKind(e) + ' · ' + epTitle(e));
+    if (e.t){ const en = addT(e.t, 120); L.push('BEGIN:VEVENT', `UID:ep-${e.id}@revia`, `DTSTAMP:${stamp}`, `DTSTART:${dt(e.date, e.t)}`, `DTEND:${dt(e.date, en < e.t ? '23:59' : en)}`, `SUMMARY:${title}`, 'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${title}`, 'TRIGGER:-P1D', 'END:VALARM', 'END:VEVENT'); }
+    else L.push('BEGIN:VEVENT', `UID:ep-${e.id}@revia`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${dd(e.date)}`, `DTEND;VALUE=DATE:${dd(addD(e.date, 1))}`, `SUMMARY:${title}`, 'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${title}`, 'TRIGGER:-PT6H', 'END:VALARM', 'END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  return L.join('\r\n');
+}
+
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; });
+
+/* ============================================================ actions */
+function toggle(id){
+  const s = byId(id); if (!s) return;
+  s.done = !s.done; s.at = s.done ? Date.now() : null;
+  if (s.done){ buzz(30); if (state.timer && state.timer.id === id) state.timer = null; }
+  toast(s.done ? `${sname(s.s)} : séance faite · +${dur(s.m)}` : 'Séance décochée');
+  refresh();
+}
+function openEdit(id, d){
+  const s = id ? byId(id) : null, tS = todayS();
+  const def = d || (tab === 'plan' && weekSel && monday(tS) !== weekSel ? (weekDays(weekSel)[0] || weekSel) : (tS < state.planStart ? state.planStart : tS));
+  push({kind: 'edit', id: s ? s.id : null, del: false, f: s ? {s: s.s, d: s.d, t: s.t, p: s.p || '', m: s.m} : {s: (state.subjects[0] || {}).k, d: def, t: '', p: '', m: 60}});
+}
+function openMsg(id){
+  state.inbox.read[id] = true; save();
+  if (id === 'hello') push({kind: 'hello'});
+  else if (id[0] === 'w') push({kind: 'report', w: id.slice(1)});
+  else if (id[0] === 'j'){ const [n, ex] = id.slice(1).split('_'); push({kind: 'milestone', n: +n, ex}); }
+  else if (id[0] === 'p'){ const m = state.inbox.meta[id]; const W = weeks(); push({kind: 'weekplan', id, w: W.includes(m.w) ? m.w : W[0]}); }
+  render();
+}
+const ACT = {
+  tab(el){ goTab(el.dataset.v); },
+  week(el){ weekSel = el.dataset.v; render(); },
+  toggle(el){ toggle(el.dataset.id); },
+  open(el){ push({kind: 'session', id: el.dataset.id, reveal: false}); },
+  new(el){ openEdit(null, el.dataset.d); },
+  edit(el){ openEdit(el.dataset.id); },
+  back(){ pop(); },
+  late(){ push({kind: 'late'}); },
+  inbox(){ push({kind: 'inbox'}); },
+  msg(el){ openMsg(el.dataset.id); },
+  'msg-hide'(el){ state.inbox.hidden[el.dataset.id] = true; refresh(); },
+  'inbox-readall'(){ messages().forEach(m => state.inbox.read[m.id] = true); refresh(); },
+  report(el){ push({kind: 'report', w: el.dataset.v}); },
+  page(el){ const k = el.dataset.v; push(k === 'name' ? {kind: 'name', v: state.profile.first} : k === 'backup' ? {kind: 'backup', imp: null, err: ''} : {kind: k}); },
+  reveal(){ top_().reveal = true; renderPages(); },
+  'timer-start'(el){ state.timer = {id: el.dataset.id, start: Date.now()}; save(); renderPages(); render(); },
+  'timer-stop'(){ state.timer = null; save(); renderPages(); render(); },
+  /* séance */
+  'e-subj'(el){ top_().f.s = el.dataset.v; renderPages(); },
+  /* heure précise / moment de la journée / sans horaire (séances, créneaux et épreuves) */
+  tmode(el){ const f = top_().f, v = el.dataset.v;
+    if (v === 'time'){ f.t = f.t || el.dataset.def || '12:00'; f.p = ''; }
+    else if (v === 'period'){ if (f.t){ const m = toMin(f.t); f.p = m < 720 ? 'matin' : m < 1080 ? 'aprem' : 'soir'; } f.t = ''; f.p = f.p || 'aprem'; }
+    else { f.t = ''; f.p = ''; }
+    renderPages(); },
+  tper(el){ const f = top_().f; f.t = ''; f.p = el.dataset.v; renderPages(); },
+  'e-m'(el){ const f = top_().f; f.m = Math.max(15, Math.min(240, f.m + 15 * +el.dataset.v)); renderPages(); },
+  'e-save'(){
+    const pg = top_(), f = pg.f;
+    if (!isD(f.d)) return toast('Choisis un jour');
+    if (!subj(f.s)) return toast('Choisis une matière');
+    let s = pg.id ? byId(pg.id) : null;
+    if (!s){ s = {id: uid(), done: false, at: null, note: ''}; state.sessions.push(s); }
+    const moved = s.d !== f.d || s.t !== f.t;
+    Object.assign(s, {s: f.s, d: f.d, t: f.t, p: f.t ? '' : (f.p || ''), m: f.m, own: true});
+    if (!f.t && (moved || s.k == null)) s.k = Math.max(-1, ...state.sessions.filter(x => x.d === f.d && x !== s).map(x => x.k || 0)) + 1;
+    if (s.k == null) s.k = 0;
+    toast(pg.id ? 'Séance enregistrée' : 'Séance ajoutée');
+    pop(); refresh();
+  },
+  'e-del'(){
+    const pg = top_();
+    if (!pg.del){ pg.del = true; renderPages(); return; }
+    state.sessions = state.sessions.filter(s => s.id !== pg.id);
+    if (state.timer && state.timer.id === pg.id) state.timer = null;
+    toast('Séance supprimée');
+    pop(stack[stack.length - 2] && stack[stack.length - 2].kind === 'session' ? 2 : 1); refresh();
+  },
+  /* profil, dates */
+  'name-save'(){ state.profile.first = (top_().v || '').trim().slice(0, 40); toast('Prénom enregistré'); pop(); refresh(); },
+  'welcome-go'(){ state.profile.first = (top_().v || '').trim().slice(0, 40); state.welcomed = true; pop(); refresh(); },
+  skin(el){ state.settings.look = el.dataset.v; refresh(); },
+  /* objectifs et matières */
+  obj(el){ const x = subj(el.dataset.k); if (!x) return; x.h = Math.max(0, Math.min(100, Math.round((x.h + +el.dataset.v) * 4) / 4)); refresh(); },
+  subject(el){ push({kind: 'subject', k: el.dataset.v, del: false}); },
+  'subject-new'(){ const k = 's' + uid(); state.subjects.push({k, name: 'Nouvelle matière', icon: 'star', h: 2, long: false, lang: false}); save(); push({kind: 'subject', k, del: false}); },
+  'sub-icon'(el){ const x = subj(el.dataset.k); if (x){ x.icon = el.dataset.v; refresh(); } },
+  'sub-h'(el){ const x = subj(top_().k); if (x){ x.h = Math.max(0, Math.min(100, Math.round((x.h + .25 * +el.dataset.v) * 4) / 4)); refresh(); } },
+  'sub-flag'(el){ const x = subj(el.dataset.k); if (x){ x[el.dataset.v] = !x[el.dataset.v]; if (top_() && top_().kind === 'ep') top_().flagTouched = true; refresh(); } },
+  'sub-del'(el){
+    const pg = top_(); if (!pg.del){ pg.del = true; renderPages(); return; }
+    const k = el.dataset.k, nm = sname(k);
+    state.epreuves.forEach(e => { if (e.s === k){ e.title = e.title || nm; e.s = ''; } });
+    state.subjects = state.subjects.filter(x => x.k !== k);
+    state.sessions = state.sessions.filter(s => s.s !== k);
+    if (state.timer && !byId(state.timer.id)) state.timer = null;
+    toast('Matière supprimée'); pop(); refresh();
+  },
+  regen(){
+    const pg = top_(); if (!pg.c){ pg.c = true; renderPages(); return; }
+    const n = replan('obj'); pg.c = false;
+    toast(!n ? 'Plus de créneaux libres d’ici aux semestrielles' : regenerate.left >= 30 ? `${n} séances · ${hrs(regenerate.left)} h n’ont pas trouvé de place` : 'Planning refait · le détail est dans ta boîte de réception');
+    refresh();
+  },
+  /* créneaux */
+  slot(el){ const x = state.slots.find(s => s.id === el.dataset.id); if (x) push({kind: 'slot', id: x.id, f: {d: x.d, t: x.t, p: x.p || '', m: x.m}}); },
+  'slot-new'(el){ push({kind: 'slot', id: null, f: {d: +el.dataset.v, t: '18:00', p: '', m: 60}}); },
+  'sl-d'(el){ top_().f.d = +el.dataset.v; renderPages(); },
+  'sl-m'(el){ const f = top_().f; f.m = Math.max(15, Math.min(600, f.m + 15 * +el.dataset.v)); renderPages(); },
+  'sl-save'(){ const pg = top_(); let x = pg.id && state.slots.find(s => s.id === pg.id); if (!x){ x = {id: uid()}; state.slots.push(x); } Object.assign(x, pg.f, {p: pg.f.t ? '' : (pg.f.p || '')}); state.slotsDirty = true; toast('Créneau enregistré'); pop(); refresh(); },
+  'sl-del'(){ const pg = top_(); state.slots = state.slots.filter(s => s.id !== pg.id); state.slotsDirty = true; toast('Créneau supprimé'); pop(); refresh(); },
+  'wp-nav'(el){ const pg = top_(), W = weeks(), i = W.indexOf(pg.w) + +el.dataset.v; if (i >= 0 && i < W.length){ pg.w = W[i]; renderPages(); document.querySelector('#pages .page:last-child').scrollTop = 0; } },
+  'wp-open'(el){ const w = el.dataset.v; goTab('plan'); weekSel = w; render(); },
+  /* calendrier et épreuves */
+  'cal-month'(el){ const [y, m] = calM.split('-').map(Number); calM = iso(new Date(y, m - 1 + +el.dataset.v, 1)).slice(0, 7); render(); },
+  'cal-day'(el){ calSel = el.dataset.d; calM = calSel.slice(0, 7); render(); },
+  'ep-new'(el){ const kind = el.dataset.kind === 'eval' ? 'eval' : 'sem';
+    push({kind: 'ep', id: null, del: false, f: {kind, s: (state.subjects[0] || {}).k || '', title: '', date: el.dataset.d || (calSel >= todayS() ? calSel : todayS()), t: '', p: ''}}); },
+  'ep-edit'(el){ const e = state.epreuves.find(x => x.id === el.dataset.id); if (e) push({kind: 'ep', id: e.id, del: false, f: {kind: e.kind || 'sem', s: e.s, title: e.title || '', date: e.date, t: e.t || '', p: e.p || ''}}); },
+  'ep-kind'(el){ top_().f.kind = el.dataset.v; renderPages(); },
+  'ep-s'(el){ top_().f.s = el.dataset.v; renderPages(); },
+  'ep-save'(){
+    const pg = top_(), f = pg.f;
+    if (!isD(f.date)) return toast('Choisis un jour');
+    if (f.s === '' && !f.title.trim()) return toast("Donne un nom à l'épreuve");
+    let e = pg.id && state.epreuves.find(x => x.id === pg.id);
+    const before = e ? JSON.stringify(e) : '';
+    if (!e){ e = {id: uid()}; state.epreuves.push(e); }
+    Object.assign(e, {kind: f.kind === 'eval' ? 'eval' : 'sem', s: f.s, title: f.s ? '' : f.title.trim().slice(0, 40), date: f.date, t: f.t, p: f.t ? '' : (f.p || '')});
+    calSel = f.date; calM = f.date.slice(0, 7);
+    const word = isEval(e) ? 'Évaluation' : 'Semestrielle';
+    pop();
+    if (evalMoves(e) && (JSON.stringify(e) !== before || pg.flagTouched)){ const n = replan('evals'); save(); toast(n ? `${word} enregistrée · planning refait (détail dans ta boîte)` : `${word} enregistrée`); }
+    else toast(`${word} ${pg.id ? 'enregistrée' : 'ajoutée'}`);
+    refresh();
+  },
+  'ep-del'(){
+    const pg = top_(); if (!pg.del){ pg.del = true; renderPages(); return; }
+    const e = state.epreuves.find(x => x.id === pg.id), moves = e && evalMoves(e);
+    state.epreuves = state.epreuves.filter(x => x.id !== pg.id); pop();
+    if (moves){ replan('evals'); save(); toast('Supprimée · planning refait'); } else toast('Supprimée');
+    refresh();
+  },
+  /* rappels, fichiers */
+  async 'notif-toggle'(){
+    if (!('Notification' in window)){ toast("Installe d'abord l'app sur l'écran d'accueil"); return; }
+    if (state.settings.notif && Notification.permission === 'granted'){ state.settings.notif = false; refresh(); return; }
+    let p = Notification.permission;
+    if (p === 'default') p = await Notification.requestPermission();
+    state.settings.notif = p === 'granted';
+    if (p === 'denied') toast('Autorise les notifications dans les réglages du téléphone');
+    else if (p === 'granted') toast('Rappels activés');
+    refresh();
+  },
+  async ics(){ if (await saveFile('revisions-semestrielles.ics', icsText(), 'text/calendar')) toast('Fichier calendrier prêt'); },
+  async 'bk-export'(){ if (await saveFile(`revia-copie-${todayS()}.json`, JSON.stringify(state), 'application/json')) toast('Copie enregistrée'); },
+  'bk-import'(){ const pg = top_(); if (!pg.imp) return; state = pg.imp; toast('Données restaurées'); pop(); refresh(); },
+  'reset-plan'(){ const pg = top_(); if (!pg.c1){ pg.c1 = true; renderPages(); return; } state.sessions = defaultPlan(state.planStart).filter(s => subj(s.s)); state.timer = null; weekSel = null; toast('Planning remis à zéro'); pop(); refresh(); },
+  wipe(){ const pg = top_(); if (!pg.c2){ pg.c2 = true; renderPages(); return; } try { localStorage.removeItem(LS); } catch (e){} state = fresh(); pop(stack.length); tab = 'home'; animNext = true; refresh(); welcome(); },
+  async 'install-go'(){ if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch (e){} installEvt = null; renderPages(); }
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const f = ACT[el.dataset.act]; if (f) f(el, e);
+});
+document.addEventListener('input', e => {
+  const el = e.target, k = el.dataset && el.dataset.in; if (!k) return;
+  if (k === 'note'){ const s = byId(el.dataset.id); if (s){ s.note = el.value.slice(0, 2000); save(); } }
+  else if (k === 'pg-v') top_().v = el.value;
+  else if (k === 'ep-title') top_().f.title = el.value;
+  else if (k === 'sub-name'){ const v = el.value.trim(), x = subj(el.dataset.k); if (v && x){ x.name = v.slice(0, 30); save(); render(); const h = document.querySelector('#pages .page:last-child .phead h1'); if (h) h.textContent = x.name; } }
+});
+document.addEventListener('change', e => {
+  const el = e.target, k = el.dataset && el.dataset.in; if (!k) return;
+  if (k === 'e-d') top_().f.d = el.value;
+  else if (k === 'tp'){ const f = top_().f, [h, m] = (f.t || '12:00').split(':'); f.t = el.dataset.part === 'h' ? `${el.value}:${m}` : `${h}:${el.value}`; f.p = ''; renderPages(); }
+  else if (k === 'ep-d') top_().f.date = el.value;  else if (k === 'exam' && isD(el.value)){ state.exam = el.value; weekSel = null; refresh(); }
+  else if (k === 'planStart' && isD(el.value)){ state.planStart = el.value; weekSel = null; refresh(); }  else if (k === 'bk-file'){
+    const pg = top_(), file = el.files && el.files[0]; pg.imp = null; pg.err = '';
+    if (!file) return renderPages();
+    file.text().then(txt => { let d = null; try { d = normalize(JSON.parse(txt)); } catch (er){} if (d) pg.imp = d; else pg.err = "Ce fichier n'est pas une copie de Revia."; renderPages(); });
+  }
+});
+function welcome(){ push({kind: 'welcome', v: state.profile.first || ''}, false); }
+
+/* ============================================================ démarrage */
+/* créneaux changés mais l'app fermée avant de quitter la page : on refait le planning maintenant */
+if (state.slotsDirty && state.welcomed){ replan('slots'); save(); }
+render();
+scheduleNotifs();
+if (!state.welcomed) welcome();
+if ('serviceWorker' in navigator && location.protocol !== 'file:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>
