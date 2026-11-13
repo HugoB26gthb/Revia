@@ -2,7 +2,7 @@
    La page est toujours redemandée au réseau d'abord : une nouvelle version publiée sur GitHub
    arrive donc toute seule au prochain lancement (pas besoin de changer de numéro de version). */
 /* nom propre à la version « papier » : si les deux versions sont publiées sur le même site, chacune garde ses fichiers */
-const CACHE = 'revia-papier-v1';
+const CACHE = 'revia-papier-v2';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/maskable-512.png'];
 
 self.addEventListener('install', e => {
