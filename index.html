@@ -512,6 +512,8 @@ function normalize(s){
     out.lang = '';
   }
   out.inbox = Object.assign({got: {}, read: {}, hidden: {}, meta: {}}, s.inbox || {});
+  /* séances fixes : chaque semaine, même jour, même matière, en plus du planning */
+  out.fixed = Array.isArray(s.fixed) ? s.fixed.filter(x => x && typeof x.d === 'number' && x.s).map(x => Object.assign({id: uid(), t: '', p: '', m: 60}, x)) : [];
   return out;
 }
 function load(){ try { return normalize(JSON.parse(localStorage.getItem(LS))); } catch (e){ return null; } }
@@ -579,6 +581,24 @@ const slotTxt = x => x.t ? `${hm(x.t)} – ${hm(addT(x.t, x.m))}` : PERIODS[x.p]
 const total = list => list.reduce((a, s) => a + s.m, 0);
 const doneMin = list => total(list.filter(s => s.done));
 const doneOf = k => doneMin(state.sessions.filter(s => s.s === k));
+/* séances en plus du planning : les séances fixes de chaque semaine (fx) et les heures en plus déjà faites (xtra).
+   Elles comptent dans les heures faites, mais n'enlèvent rien au planning. */
+const isX = s => !!(s.fx || s.xtra);
+const planFrom = () => { const tS = todayS(); return tS > state.planStart ? tS : state.planStart; };
+/* enlève les séances à venir (pas encore faites) d'une séance fixe */
+function clearFx(id){ const from = planFrom(); state.sessions = state.sessions.filter(s => s.fx !== id || s.done || s.d < from); }
+/* place chaque séance fixe sur chaque semaine, jusqu'à la veille des semestrielles */
+function syncFixed(){
+  if (!Array.isArray(state.fixed)) state.fixed = [];
+  const from = planFrom(), to = lastDay(), ids = new Set(state.fixed.map(x => x.id));
+  state.sessions = state.sessions.filter(s => !s.fx || s.done || s.d < from || ids.has(s.fx));
+  state.fixed.forEach(x => {
+    for (let d = from; d <= to; d = addD(d, 1)){
+      if (wday(d) !== x.d || state.sessions.some(s => s.fx === x.id && s.fd === d)) continue;
+      state.sessions.push({id: uid(), d, fd: d, t: x.t || '', p: x.t ? '' : (x.p || ''), k: 30, s: x.s, m: x.m, done: false, at: null, note: '', fx: x.id});
+    }
+  });
+}
 const objMin = () => state.subjects.reduce((a, x) => a + Math.round(x.h * 60), 0);
 function dayStatus(d){ const l = ofDay(d); if (!l.length) return 'x'; const n = l.filter(s => s.done).length; return n === l.length ? 'f' : n ? 'p' : ''; }
 function streak(){
@@ -632,7 +652,8 @@ const capacity = (from, to) => from > to ? 0 : slotChunks(from, to).reduce((a, c
 function regenerate(){
   const tS = todayS(), from = tS > state.planStart ? tS : state.planStart, to = lastDay();
   /* on garde : les séances faites, les jours passés, et les séances que tu as ajoutées ou modifiées toi-même */
-  state.sessions = state.sessions.filter(s => s.done || s.own || s.d < from);
+  state.sessions = state.sessions.filter(s => s.done || s.own || s.fx || s.d < from);
+  syncFixed();
   if (from > to) return 0;
   let ch = slotChunks(from, to);
   /* les créneaux déjà occupés par une séance gardée ne sont pas réutilisés */
@@ -640,7 +661,7 @@ function regenerate(){
   ch = ch.filter(c => !c.t || !kept.some(s => s.d === c.d && s.t && toMin(s.t) < toMin(c.t) + c.m && toMin(s.t) + s.m > toMin(c.t)));
   /* séances gardées sans heure précise : elles prennent la place d'un créneau du même moment (matin, après-midi, soir ou sans horaire) */
   const looseUsed = {}, lk = (d, p) => d + '|' + (PERIODS[p] ? p : '');
-  kept.filter(s => !s.t).forEach(s => looseUsed[lk(s.d, s.p)] = (looseUsed[lk(s.d, s.p)] || 0) + s.m);
+  kept.filter(s => !s.t && !isX(s)).forEach(s => looseUsed[lk(s.d, s.p)] = (looseUsed[lk(s.d, s.p)] || 0) + s.m);
   /* un bloc à moitié pris garde le reste ; un reste trop court (moins de 30 min) s'ajoute au bloc suivant */
   const carry = {};
   ch = ch.filter(c => {
@@ -653,8 +674,10 @@ function regenerate(){
     return true;
   });
   /* ce qui reste à placer = objectif − séances faites − séances gardées à venir (au quart d'heure près) */
-  const keptMin = k => total(state.sessions.filter(s => s.s === k && !s.done && s.d >= from));
-  const rem = {}; state.subjects.forEach(x => rem[x.k] = Math.max(0, Math.round((x.h * 60 - doneOf(x.k) - keptMin(x.k)) / 15) * 15));
+  /* les séances fixes et les heures en plus ne comptent pas : elles s'ajoutent au planning */
+  const keptMin = k => total(state.sessions.filter(s => s.s === k && !s.done && !isX(s) && s.d >= from));
+  const doneP = k => doneMin(state.sessions.filter(s => s.s === k && !isX(s)));
+  const rem = {}; state.subjects.forEach(x => rem[x.k] = Math.max(0, Math.round((x.h * 60 - doneP(x.k) - keptMin(x.k)) / 15) * 15));
   const capT = ch.reduce((a, c) => a + c.m, 0);
   let need = Object.values(rem).reduce((a, b) => a + b, 0);
   const wSum = state.subjects.reduce((a, x) => a + Math.max(0, x.h), 0);
@@ -723,7 +746,7 @@ function regenerate(){
   }
   state.sessions.push(...out);
   /* ce qui manque vraiment par rapport aux objectifs (le temps en plus ne compte pas) */
-  regenerate.left = state.subjects.reduce((a, x) => { const miss = x.h * 60 - total(state.sessions.filter(s => s.s === x.k)); return a + (miss >= 30 ? miss : 0); }, 0);
+  regenerate.left = state.subjects.reduce((a, x) => { const miss = x.h * 60 - total(state.sessions.filter(s => s.s === x.k && !isX(s))); return a + (miss >= 30 ? miss : 0); }, 0);
   return out.length;
 }
 
@@ -806,7 +829,7 @@ const chevron = () => `<span class="chev">${ui('chev', 16, 2)}</span>`;
 function sessRow(s, extra = ''){
   const next = extra.includes('next'), late = extra.includes('late');
   return `<div class="sess card ${s.done ? 'done' : ''} ${next ? 'next' : ''}">
-    <button class="open" data-act="open" data-id="${s.id}"><span class="ico sm">${subjIcon(s.s, 18)}</span><span class="t"><b>${esc(sname(s.s))}${next ? '<span class="tag">Ensuite</span>' : ''}${late ? `<span class="tag warn">${esc(dShort(s.d))}</span>` : ''}</b><small>${slotLabel(s)} · ${dur(s.m)}</small></span></button>
+    <button class="open" data-act="open" data-id="${s.id}"><span class="ico sm">${subjIcon(s.s, 18)}</span><span class="t"><b>${esc(sname(s.s))}${s.fx ? '<span class="tag">Fixe</span>' : s.xtra ? '<span class="tag">En plus</span>' : ''}${next ? '<span class="tag">Ensuite</span>' : ''}${late ? `<span class="tag warn">${esc(dShort(s.d))}</span>` : ''}</b><small>${s.xtra ? 'Fait en plus' : slotLabel(s)} · ${dur(s.m)}</small></span></button>
     <button class="ck ${s.done ? 'on' : ''}" data-act="toggle" data-id="${s.id}" aria-label="${s.done ? 'Décocher' : 'Cocher'} ${esc(sname(s.s))}">${ui('check', 18, 2.6)}</button>
   </div>`;
 }
@@ -904,6 +927,7 @@ function homeScreen(){
       <div class="card stat"><span>Série</span><b class="num">${streak()}<small> j</small></b></div>
     </div>
     ${todayBlock}
+    <button class="card srow" data-act="xt-new"><span class="ico">${ui('plus', 20, 2)}</span><span class="t"><b>J'ai révisé en plus</b><small>Ajoute tes heures en plus à tes heures faites</small></span>${chevron()}</button>
     ${late.length ? `<button class="card srow" data-act="late"><span class="ico warn">${ui('clock', 20)}</span><span class="t"><b>${plural(late.length, 'séance pas cochée', 'séances pas cochées')}</b><small>Faites quand même ? Coche-les. Sinon, déplace-les.</small></span>${chevron()}</button>` : ''}
     ${eps.length ? `<h2 class="h2">Évaluations et semestrielles <button data-act="tab" data-v="cal">Calendrier ${ui('chev', 14, 2)}</button></h2><div>${eps.map(epRow).join('')}</div>` : ''}
     <button class="card srow" data-act="page" data-v="strategy"><span class="ico">${ui('bulb', 20)}</span><span class="t"><b>${esc(tip.t)}</b><small>${esc(tip.d)}</small></span>${chevron()}</button>
@@ -916,7 +940,7 @@ function planScreen(){
   const w = weekSel, days = weekDays(w), list = state.sessions.filter(s => days.includes(s.d)), tot = total(list), dn = doneMin(list);
   return `<div class="screen appear">
     <div class="top"><div><h1 class="h1">Planning</h1><p class="lead">Jusqu'aux semestrielles</p></div>
-      <div class="hd-actions"><button class="avatar" data-act="page" data-v="objectives" aria-label="Objectifs">${ui('sliders', 19)}</button><button class="avatar" data-act="new" aria-label="Ajouter une séance">${ui('plus', 20, 2)}</button></div></div>
+      <div class="hd-actions"><button class="avatar" data-act="page" data-v="objectives" aria-label="Objectifs">${ui('sliders', 19)}</button><button class="avatar" data-act="page" data-v="add" aria-label="Ajouter">${ui('plus', 20, 2)}</button></div></div>
     <div class="seg" role="tablist">${W.map(m => `<button class="${m === w ? 'on' : ''}" data-act="week" data-v="${m}" role="tab" aria-selected="${m === w}">${weekShort(m)}</button>`).join('')}</div>
     <div class="card pad"><div class="brow"><span><b style="font-weight:500">${weekName(w)}</b>&nbsp;<span class="hint">${esc(weekRange(w))}</span></span><b class="num">${hrs(dn)} / ${hrs(tot)} h</b>${bar(tot ? dn / tot : 0)}</div></div>
     ${days.map(d => { const l = ofDay(d), isT = d === tS, eps = state.epreuves.filter(e => e.date === d);
@@ -1138,6 +1162,37 @@ const PAGES = {
         return `<section><div class="dayh"><b>${nm}</b><span>${l.length ? dur(l.reduce((a, x) => a + x.m, 0)) : ''}</span></div>
           ${l.map(x => `<button class="card srow" data-act="slot" data-id="${x.id}"><span class="ico sm">${ui('clock', 18)}</span><span class="t"><b>${slotTxt(x)}</b><small>${dur(x.m)}${x.t ? '' : PERIODS[x.p] ? ' dans le ' + (x.p === 'aprem' ? "l'après-midi" : perLabel(x.p).toLowerCase()) : ' quand tu veux'}</small></span>${chevron()}</button>`).join('')}
           <button class="free" data-act="slot-new" data-v="${d}" style="margin-top:${l.length ? 8 : 0}px">Ajouter un créneau</button></section>`; }).join('')}`;
+  },
+  add(){
+    const card = (act, icon, t, s) => `<button class="card srow" data-act="${act}"><span class="ico">${icon}</span><span class="t"><b>${t}</b><small>${s}</small></span>${chevron()}</button>`;
+    return `${phead('Ajouter')}
+      ${card('new', ui('cal', 20), 'Une séance', 'Une seule fois, le jour que tu choisis')}
+      ${card('fx-new', ui('reset', 20), 'Une séance fixe', 'Chaque semaine, même jour et même matière, en plus du planning')}
+      ${card('xt-new', ui('check', 20, 2.4), 'Des heures en plus', 'Tu viens de réviser en plus ? Ajoute-les à tes heures faites')}
+      <span class="lab">Mes séances fixes</span>
+      ${state.fixed.length ? `<div>${sortSlots(state.fixed).map(x => `<button class="card srow" data-act="fx" data-id="${x.id}"><span class="ico sm">${subjIcon(x.s, 18)}</span><span class="t"><b>${esc(sname(x.s))}</b><small>Chaque ${DAYS[x.d].toLowerCase()} · ${slotTxt(x)} · ${dur(x.m)}</small></span>${chevron()}</button>`).join('')}</div>` : '<p class="hint">Aucune pour l’instant.</p>'}`;
+  },
+  fx(pg){
+    const f = pg.f;
+    return `${phead(pg.id ? 'Modifier la séance fixe' : 'Nouvelle séance fixe')}
+      <p class="hint">Elle revient chaque semaine jusqu'aux semestrielles, en plus de ton planning : elle ne prend la place d'aucune autre séance.</p>
+      <span class="lab">Matière</span>${subjChips(f.s, 'fx-s')}
+      <span class="lab">Jour</span><div class="chips">${DAYS.map((nm, i) => `<button class="chip ${f.d === i ? 'on' : ''}" style="padding:8px 12px" data-act="fx-d" data-v="${i}">${nm}</button>`).join('')}</div>
+      <span class="lab">Quand ?</span>
+      ${timeBlock(f, '18:00', 'Un moment dans la journée, sans heure fixe.')}
+      ${f.t ? `<p class="hint">De ${hm(f.t)} à ${hm(addT(f.t, f.m))}.</p>` : ''}
+      <span class="lab">Durée</span>${stepper(dur(f.m), 'fx-m')}
+      <button class="btn primary" data-act="fx-save">${ui('check', 20, 2.4)}${pg.id ? 'Enregistrer' : 'Ajouter chaque semaine'}</button>
+      ${pg.id ? `<button class="btn danger" data-act="fx-del">${ui('trash', 18)}${pg.del ? 'Confirmer : supprimer (les séances déjà faites restent)' : 'Supprimer la séance fixe'}</button>` : ''}`;
+  },
+  xt(pg){
+    const f = pg.f, tS = todayS(), y = addD(tS, -1);
+    return `${phead('Heures en plus')}
+      <p class="hint">Tu as révisé en dehors du planning ? Ajoute-le ici : ça compte dans tes heures faites, sans enlever de séances au planning.</p>
+      <span class="lab">Matière</span>${subjChips(f.s, 'xt-s')}
+      <span class="lab">Quand ?</span><div class="seg"><button class="${f.d === tS ? 'on' : ''}" data-act="xt-d" data-v="${tS}">Aujourd'hui</button><button class="${f.d === y ? 'on' : ''}" data-act="xt-d" data-v="${y}">Hier</button></div>
+      <span class="lab">Durée</span>${stepper(dur(f.m), 'xt-m')}
+      <button class="btn primary" data-act="xt-save">${ui('check', 20, 2.4)}Ajouter ${dur(f.m)}${subj(f.s) ? ' de ' + esc(sname(f.s)) : ''}</button>`;
   },
   slot(pg){
     const f = pg.f;
@@ -1676,7 +1731,7 @@ const ACT = {
     if (!f.t && (moved || s.k == null)) s.k = Math.max(-1, ...state.sessions.filter(x => x.d === f.d && x !== s).map(x => x.k || 0)) + 1;
     if (s.k == null) s.k = 0;
     toast(pg.id ? 'Séance enregistrée' : 'Séance ajoutée');
-    pop(); refresh();
+    pop(!pg.id && stack.length > 1 && stack[stack.length - 2].kind === 'add' ? 2 : 1); refresh();
   },
   'e-del'(){
     const pg = top_();
@@ -1711,6 +1766,38 @@ const ACT = {
     const n = replan('obj'); pg.c = false;
     toast(!n ? 'Plus de créneaux libres d’ici aux semestrielles' : regenerate.left >= 30 ? `${n} séances · ${hrs(regenerate.left)} h n’ont pas trouvé de place` : 'Planning refait · le détail est dans ta boîte de réception');
     refresh();
+  },
+  /* séances fixes de chaque semaine */
+  'fx-new'(){ push({kind: 'fx', id: null, del: false, f: {s: (state.subjects[0] || {}).k || '', d: wday(todayS()), t: '', p: 'soir', m: 60}}); },
+  fx(el){ const x = state.fixed.find(s => s.id === el.dataset.id); if (x) push({kind: 'fx', id: x.id, del: false, f: {s: x.s, d: x.d, t: x.t || '', p: x.p || '', m: x.m}}); },
+  'fx-s'(el){ top_().f.s = el.dataset.v; renderPages(); },
+  'fx-d'(el){ top_().f.d = +el.dataset.v; renderPages(); },
+  'fx-m'(el){ const f = top_().f; f.m = Math.max(15, Math.min(300, f.m + 15 * +el.dataset.v)); renderPages(); },
+  'fx-save'(){
+    const pg = top_(), f = pg.f;
+    if (!subj(f.s)) return toast('Choisis une matière');
+    let x = pg.id && state.fixed.find(s => s.id === pg.id);
+    if (!x){ x = {id: uid()}; state.fixed.push(x); }
+    Object.assign(x, {s: f.s, d: f.d, t: f.t, p: f.t ? '' : (f.p || ''), m: f.m});
+    clearFx(x.id); syncFixed();
+    toast(`${sname(f.s)} chaque ${DAYS[f.d].toLowerCase()}`); pop(); refresh();
+  },
+  'fx-del'(){
+    const pg = top_(); if (!pg.del){ pg.del = true; renderPages(); return; }
+    state.fixed = state.fixed.filter(s => s.id !== pg.id); clearFx(pg.id);
+    toast('Séance fixe supprimée'); pop(); refresh();
+  },
+  /* heures en plus, déjà faites */
+  'xt-new'(){ push({kind: 'xt', f: {s: (state.subjects[0] || {}).k || '', d: todayS(), m: 60}}); },
+  'xt-s'(el){ top_().f.s = el.dataset.v; renderPages(); },
+  'xt-d'(el){ top_().f.d = el.dataset.v; renderPages(); },
+  'xt-m'(el){ const f = top_().f; f.m = Math.max(15, Math.min(480, f.m + 15 * +el.dataset.v)); renderPages(); },
+  'xt-save'(){
+    const f = top_().f;
+    if (!subj(f.s)) return toast('Choisis une matière');
+    state.sessions.push({id: uid(), d: f.d, t: '', p: '', k: 40 + state.sessions.filter(s => s.d === f.d).length, s: f.s, m: f.m, done: true, at: Date.now(), note: '', xtra: true, own: true});
+    toast(`+${dur(f.m)} de ${sname(f.s)} · bravo !`);
+    pop(stack.length > 1 && stack[stack.length - 2].kind === 'add' ? 2 : 1); refresh();
   },
   /* créneaux */
   slot(el){ const x = state.slots.find(s => s.id === el.dataset.id); if (x) push({kind: 'slot', id: x.id, f: {d: x.d, t: x.t, p: x.p || '', m: x.m}}); },
@@ -1796,6 +1883,7 @@ function welcome(){ push({kind: 'welcome', v: state.profile.first || ''}, false)
 /* ============================================================ démarrage */
 /* créneaux changés mais l'app fermée avant de quitter la page : on refait le planning maintenant */
 if (state.slotsDirty && state.welcomed){ replan('slots'); save(); }
+syncFixed(); save();
 render();
 scheduleNotifs();
 if (!state.welcomed) welcome();
