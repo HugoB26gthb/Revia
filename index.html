@@ -636,7 +636,7 @@ function slotChunks(from, to){
       /* aujourd'hui : on ne place rien dans un moment déjà passé */
       const gone = d === tS && (t ? false : p ? toMin(cur) >= PERIODS[p][1] + (p === 'soir' ? 240 : 300) : false);
       cutSlot(sl.m).forEach(c => {
-        if (!gone && !(d === tS && t && t <= cur)) out.push({d, t, p, m: c, k: si * 10 + k});
+        if (!gone && !(d === tS && t && t <= cur)) out.push({d, t, p, m: c, k: si * 10 + k, s: sl.s || ''});
         if (t) t = addT(t, c);
         k++;
       });
@@ -726,6 +726,13 @@ function regenerate(){
   let acc = 0;
   for (let i = 0; i < n; i++){
     const c = ch[i];
+    /* créneau réservé à une matière (ex. « ce créneau sert aux maths ») : il est toujours pour elle */
+    const own = c.s && subj(c.s);
+    if (own){
+      rem[own.k] -= c.m; alloc[own.k] = (alloc[own.k] || 0) + c.m; last[own.k] = c.d;
+      out.push({id: uid(), d: c.d, t: c.t, p: c.p || '', k: c.k, s: own.k, m: c.m, done: false, at: null, note: ''});
+      continue;
+    }
     acc += ratio * c.m;
     if (acc < c.m * .5 - 1e-9) continue;
     acc -= c.m;
@@ -1160,7 +1167,7 @@ const PAGES = {
       ${state.slotsDirty ? `<div class="card pad stack" style="border-color:var(--stroke-hi)"><b style="font-weight:500">Créneaux modifiés</b><p class="hint">Ton nouveau planning sera prêt dès que tu reviens en arrière.</p></div>` : ''}
       ${DAYS.map((nm, d) => { const l = sortSlots(state.slots.filter(x => x.d === d));
         return `<section><div class="dayh"><b>${nm}</b><span>${l.length ? dur(l.reduce((a, x) => a + x.m, 0)) : ''}</span></div>
-          ${l.map(x => `<button class="card srow" data-act="slot" data-id="${x.id}"><span class="ico sm">${ui('clock', 18)}</span><span class="t"><b>${slotTxt(x)}</b><small>${dur(x.m)}${x.t ? '' : PERIODS[x.p] ? ' dans le ' + (x.p === 'aprem' ? "l'après-midi" : perLabel(x.p).toLowerCase()) : ' quand tu veux'}</small></span>${chevron()}</button>`).join('')}
+          ${l.map(x => `<button class="card srow" data-act="slot" data-id="${x.id}"><span class="ico sm">${subj(x.s) ? subjIcon(x.s, 18) : ui('clock', 18)}</span><span class="t"><b>${slotTxt(x)}${subj(x.s) ? `<span class="tag">${esc(sname(x.s))}</span>` : ''}</b><small>${dur(x.m)}${x.t ? '' : PERIODS[x.p] ? ' dans le ' + (x.p === 'aprem' ? "l'après-midi" : perLabel(x.p).toLowerCase()) : ' quand tu veux'}${subj(x.s) ? ' · pour ' + esc(sname(x.s)) : ' · matière au choix du planning'}</small></span>${chevron()}</button>`).join('')}
           <button class="free" data-act="slot-new" data-v="${d}" style="margin-top:${l.length ? 8 : 0}px">Ajouter un créneau</button></section>`; }).join('')}`;
   },
   add(){
@@ -1202,6 +1209,8 @@ const PAGES = {
       ${timeBlock(f, '18:00', 'Un moment libre dans la journée, sans heure fixe.')}
       ${f.t ? `<p class="hint">De ${hm(f.t)} à ${hm(addT(f.t, f.m))}.</p>` : ''}
       <span class="lab">Durée</span>${stepper(dur(f.m), 'sl-m')}
+      <span class="lab">Matière</span>${subjChips(f.s || '', 'sl-s', `<button class="chip ${!f.s ? 'on' : ''}" data-act="sl-s" data-v="">${sv(SUBJ.star, 18, 1.5)}Au choix</button>`)}
+      <p class="hint">${subj(f.s) ? `Ce créneau sert toujours à ${esc(sname(f.s))}. Il compte dans tes heures de ${esc(sname(f.s))} du planning.` : "Au choix : le planning y met la matière qui en a le plus besoin."}</p>
       <button class="btn primary" data-act="sl-save">${ui('check', 20, 2.4)}Enregistrer</button>
       ${pg.id ? `<button class="btn danger" data-act="sl-del">${ui('trash', 18)}Supprimer le créneau</button>` : ''}`;
   },
@@ -1757,6 +1766,8 @@ const ACT = {
     const k = el.dataset.k, nm = sname(k);
     state.epreuves.forEach(e => { if (e.s === k){ e.title = e.title || nm; e.s = ''; } });
     state.subjects = state.subjects.filter(x => x.k !== k);
+    state.slots.forEach(x => { if (x.s === k) x.s = ''; });
+    state.fixed = state.fixed.filter(x => x.s !== k);
     state.sessions = state.sessions.filter(s => s.s !== k);
     if (state.timer && !byId(state.timer.id)) state.timer = null;
     toast('Matière supprimée'); pop(); refresh();
@@ -1800,8 +1811,9 @@ const ACT = {
     pop(stack.length > 1 && stack[stack.length - 2].kind === 'add' ? 2 : 1); refresh();
   },
   /* créneaux */
-  slot(el){ const x = state.slots.find(s => s.id === el.dataset.id); if (x) push({kind: 'slot', id: x.id, f: {d: x.d, t: x.t, p: x.p || '', m: x.m}}); },
-  'slot-new'(el){ push({kind: 'slot', id: null, f: {d: +el.dataset.v, t: '18:00', p: '', m: 60}}); },
+  slot(el){ const x = state.slots.find(s => s.id === el.dataset.id); if (x) push({kind: 'slot', id: x.id, f: {d: x.d, t: x.t, p: x.p || '', m: x.m, s: x.s || ''}}); },
+  'slot-new'(el){ push({kind: 'slot', id: null, f: {d: +el.dataset.v, t: '18:00', p: '', m: 60, s: ''}}); },
+  'sl-s'(el){ top_().f.s = el.dataset.v; renderPages(); },
   'sl-d'(el){ top_().f.d = +el.dataset.v; renderPages(); },
   'sl-m'(el){ const f = top_().f; f.m = Math.max(15, Math.min(600, f.m + 15 * +el.dataset.v)); renderPages(); },
   'sl-save'(){ const pg = top_(); let x = pg.id && state.slots.find(s => s.id === pg.id); if (!x){ x = {id: uid()}; state.slots.push(x); } Object.assign(x, pg.f, {p: pg.f.t ? '' : (pg.f.p || '')}); state.slotsDirty = true; toast('Créneau enregistré'); pop(); refresh(); },
